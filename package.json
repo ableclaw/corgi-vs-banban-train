@@ -1,0 +1,12 @@
+{
+  "name": "corgi-vs-banban-train",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "柯基闯火车 / Corgi vs. the Release Train — a browser platformer.",
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "dev": "node scripts/serve.js",
+    "test": "node test/playability.js"
+  }
+}
