@@ -6,11 +6,15 @@ A browser platformer. The corgi’s legs are short, the firewalls are not, and t
 
 ## 在线游玩 / Play
 
-公开地址（无需登录）：
+公开地址，不用登录。这是单文件页面，浏览器直接打开就能玩：
 
-**https://ableclaw.github.io/corgi-vs-banban-train/**
+**https://htmlpreview.github.io/?https://github.com/ableclaw/corgi-vs-banban-train/blob/gh-pages/play.html**
 
 Public URL, no login:
+
+**https://htmlpreview.github.io/?https://github.com/ableclaw/corgi-vs-banban-train/blob/gh-pages/play.html**
+
+仓库里已经准备好 GitHub Pages 用的 `gh-pages` 分支。当前令牌没有 Pages 管理权限，站点开关需要仓库主人点一次（见下面的部署）。打开之后，干净地址是：
 
 **https://ableclaw.github.io/corgi-vs-banban-train/**
 
@@ -54,6 +58,7 @@ The short-legged corgi missed the firewall, fell off the release train, and is c
 npm install
 npm test
 npm start
+npm run build
 ```
 
 浏览器打开 `http://127.0.0.1:3000`。
@@ -62,25 +67,34 @@ npm start
 
 ## 部署 / Deploy
 
-这是纯静态页面，GitHub Pages 从 `gh-pages` 分支的根目录发布。
+静态文件，没有后端。本地多文件站点用相对路径，GitHub Pages 项目页可以直接挂。
 
-首次在仓库里开启 Pages（需要仓库管理员权限）：
+`gh-pages` 分支已经推上去了，里面有可玩的 `index.html` 和单文件 `play.html`。开启 Pages 需要仓库管理员：
+
+1. 打开仓库 Settings → Pages。
+2. Build and deployment 选 Deploy from a branch。
+3. Branch 选 `gh-pages`，目录选 `/ (root)`，保存。
+4. 等一分钟，打开 https://ableclaw.github.io/corgi-vs-banban-train/
+
+命令行（令牌需要 Pages 管理权限时）：
 
 ```bash
-git push origin main:gh-pages
+npm run build
+git push origin HEAD:gh-pages
 gh api --method POST repos/ableclaw/corgi-vs-banban-train/pages \
   -f build_type=legacy \
   -f source[branch]=gh-pages \
   -f source[path]=/
 ```
 
-以后更新线上版本：
+以后更新：
 
 ```bash
-git push origin main:gh-pages
+npm run build
+git push origin HEAD:gh-pages
 ```
 
-等 Pages 构建完成即可。站点路径是项目页，资源都用相对路径，不需要改 `base`。
+`npm run build` 用 esbuild 把脚本打进 `play.html`。GitHub 的 HTML 预览服务不加载相对路径的模块，所以现在的公开链接指向这个单文件。
 
 ## 项目结构 / Layout
 
