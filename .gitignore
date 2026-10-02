@@ -1,4 +1,5 @@
 node_modules/
+.play.bundle.js
 .DS_Store
 *.log
 .surge/
