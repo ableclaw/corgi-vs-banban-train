@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>准点发车 · 谁上车谁留下</title>
+    <meta name="description" content="火车准点开，你决定谁上车、谁留下。用流程牌拦住还没准备好的需求。" />
+    <meta name="theme-color" content="#1a1612" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="logo" aria-hidden="true"></span>
+          <div>
+            <strong>准点发车</strong>
+            <small>On Time · 版本火车</small>
+          </div>
+        </div>
+        <p class="top-joke">火车准点开，你决定谁上车、谁留下。</p>
+      </header>
+
+      <section id="screen-title" class="screen">
+        <div class="hero">
+          <div class="poster" aria-hidden="true">
+            <div class="poster-train">
+              <span>v2.0</span><span>需求</span><span>准点</span>
+            </div>
+            <div class="poster-track">
+              <em>暗黑模式 · 别上这班</em>
+              <b>需求评审</b>
+              <i>上线站</i>
+            </div>
+            <p>车自己会开。你只决定谁留下。</p>
+          </div>
+          <div>
+            <p class="eyebrow">同一班 v2.0</p>
+            <h1>你是发版前的卡点</h1>
+            <p class="story" id="title-story">你是发版前的卡点。这列版本火车到点就开，谁也拦不住车。轨道上标着「别上这班」的需求，这次不能上车。</p>
+            <p class="lore">火车准点开，你决定谁上车、谁留下。</p>
+            <div class="actions">
+              <button type="button" id="btn-start" class="primary">从「需求」开始</button>
+              <button type="button" id="btn-levels">选择班次 · Levels</button>
+            </div>
+            <ul class="help">
+              <li>五步是同一班车：需求、评审、联调、封版、发车。</li>
+              <li>每一步开始前，先看要留下哪条需求。</li>
+              <li>点流程牌，再点到那条轨道上。右边是上线站。</li>
+              <li>车到点就走。该留的没赶上，这一步就过了。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-select" class="screen" hidden>
+        <div class="panel">
+          <h2>同一班 v2.0<span>从需求走到发车</span></h2>
+          <p class="story">五步接在一起。每一步拦住不该上的需求，车自己准点开。</p>
+          <div id="level-list" class="level-list"></div>
+          <div class="actions">
+            <button type="button" id="btn-select-back">返回 · Back</button>
+            <button type="button" id="btn-reset">重置进度 · Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-play" class="screen" hidden>
+        <div class="play-head">
+          <div>
+            <p id="lv-kicker" class="eyebrow"></p>
+            <h2 id="lv-name"></h2>
+            <p id="mission" class="mission"></p>
+            <p id="lv-blurb"></p>
+          </div>
+          <div class="clock" id="clock-wrap">
+            <span>距发车 · Departure</span>
+            <strong id="clock">0</strong>
+            <em id="phase-label"></em>
+          </div>
+          <div class="budget">
+            <span>剩余流程牌</span>
+            <strong id="budget">0</strong>
+            <em id="used-label"></em>
+          </div>
+        </div>
+        <p id="hint" class="hint"></p>
+        <ul id="roster" class="roster"></ul>
+        <div class="board-scroll">
+          <div id="board"></div>
+        </div>
+        <div id="palette" class="palette" aria-label="流程牌"></div>
+        <p class="hint-keys">数字键选牌 · 布置时再点一格可拿起 · Z 撤回上一张 · 手机直接点选</p>
+        <p id="toast" class="toast" hidden></p>
+        <div class="play-actions">
+          <button type="button" id="btn-giveup">回选关 · Levels</button>
+        </div>
+        <div id="brief" class="brief" hidden>
+          <div class="brief-card">
+            <p id="brief-kicker" class="eyebrow"></p>
+            <h2 id="brief-title"></h2>
+            <p id="brief-text" class="story"></p>
+            <p id="brief-goal" class="mission"></p>
+            <button type="button" id="btn-brief" class="primary">开始布置</button>
+          </div>
+        </div>
+        <div id="modal" class="modal" hidden></div>
+      </section>
+    </div>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
