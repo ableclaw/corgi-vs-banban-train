@@ -1,110 +1,102 @@
-# 柯基闯火车 / Corgi vs. the Release Train
+# 准点发车
 
-一只短腿柯基，一列不等人的版本火车，还有几堵跳不过去的防火墙。
+火车准点开，你决定谁上车、谁留下。
 
-A browser platformer. The corgi’s legs are short, the firewalls are not, and the release train is the boss hazard.
+版本火车按点发车。没准备好的需求赶不上这一班，就等下一班。玩家是内部干系人，在需求轨道上放下流程牌，让指定需求错过上车。火车本身不会被拦住，也不会被拆掉。
 
-## 在线游玩 / Play
+## 在线游玩
 
-公开地址，不用登录。这是单文件页面，浏览器直接打开就能玩：
-
-**https://htmlpreview.github.io/?https://github.com/ableclaw/corgi-vs-banban-train/blob/gh-pages/play.html**
-
-Public URL, no login:
+不用登录。公开单页：
 
 **https://htmlpreview.github.io/?https://github.com/ableclaw/corgi-vs-banban-train/blob/gh-pages/play.html**
 
-仓库里已经准备好 GitHub Pages 用的 `gh-pages` 分支。当前令牌没有 Pages 管理权限，站点开关需要仓库主人点一次（见下面的部署）。打开之后，干净地址是：
+仓库的 `gh-pages` 分支已经放好 `play.html` 和整站。仓库主人在 Settings → Pages 里选 Deploy from a branch → `gh-pages` / root 之后，干净地址是：
 
 **https://ableclaw.github.io/corgi-vs-banban-train/**
 
-## 故事 / Lore
+## 怎么玩
 
-短腿柯基没跳过防火墙，从版本火车上摔了下去。现在它要一关一关爬回去。
+每一关是一班从左到右的车。右边是上线站。先有几秒布置窗口，窗口里可以放下流程牌，也可以再点同一格拿起来。窗口结束后车开始走，已经放下的牌不能再拿起，还没走过的空格可以补牌。
 
-The short-legged corgi missed the firewall, fell off the release train, and is climbing back one level at a time.
+点一张流程牌，再点需求轨道上的格子。标着「别上这班」的需求必须错过这班车。其他需求可以上车。车到点照开。
 
-关卡都是发布流程里的梗，不是政治段子：
+流程牌只拖需求，不停车：
 
-| 关卡 | 中文 | English |
+| 牌 | 效果 |
+| --- | --- |
+| 防火墙、封版检查 | 一直挡住，过不去 |
+| 需求评审 | 过这一格变得很慢 |
+| 工单 | 排个短队，通常拦不住 |
+| 安全评审、联调失败、热修 | 干等一会儿 |
+| 合规 | 打回去补材料 |
+
+五班难度往上走：车更快、布置更短，或者轨道更直、牌更紧。
+
+| 班次 | 名称 | 要留下的需求 |
 | --- | --- | --- |
-| 1 | 入职第一天 | Day One |
-| 2 | 需求评审 | Spec Review |
-| 3 | 联调之夜 | Integration Night |
-| 4 | 封版前夕 | Code Freeze |
-| 5 | 版本火车 | Release Train |
+| 1 | 需求 | 暗黑模式 |
+| 2 | 评审 | 导出报表（按钮文案可以上） |
+| 3 | 联调 | 支付联调、发票接口 |
+| 4 | 封版 | 权限改造 |
+| 5 | 发车 | 实时风控、批量导出 |
 
-路上会遇到：
+越早拦住、剩下的牌越多、不该拦的需求正常上车，分数越高。让目标上了这班车就是输。
 
-- **防火墙**：矮的跳得过，底下留缝的只能蹲。
-- **工单**：地上的要跳，贴着头顶飞的要蹲。
-- **坏构建**：红色箱子，踩上去掉体力。
-- **热修**：绿补丁。矮的跳，长条的蹲。
-- **版本车厢**：会落下、再抬起。灯变绿、写着「冲」再跑过去。
+操作：鼠标或触屏点选。数字键 1–9 选牌，布置窗口里按 Z 撤回上一张。过关后解锁下一班，进度写在这台设备的 `localStorage`（键名 `train-dispatch-save-v1`）。
 
-## 操作 / Controls
+界面上能看到距发车倒计时、剩余流程牌，以及谁上车、谁没赶上。
 
-- 键盘：← → 或 A / D 移动，空格 / ↑ / W 跳跃，↓ / S 蹲下，P 暂停，M 静音。
-- 屏幕按钮：← → 蹲 跳，手机和桌面都能用。
-- 跳跃高度是固定的，按久也不会跳得更高——短腿是规则，不是手感 bug。
-- 三滴体力。碰到危险会回到最近的检查点。体力归零则本关失败。
-- 到达「到站」或终点「车头」即过关，并解锁下一关。进度保存在本机 `localStorage`。
+## 本地运行
 
-## 本地运行 / Run locally
-
-需要 Node.js 18+。没有额外依赖。
+需要 Node.js 18+。没有需要安装的依赖。
 
 ```bash
-npm install
 npm test
 npm start
 npm run build
 ```
 
-浏览器打开 `http://127.0.0.1:3000`。
+浏览器打开 http://127.0.0.1:3000 。
 
-`npm test` 会用一套固定走位把 5 关都打通，并检查「通过第 1 关会解锁第 2 关」。
+`npm test` 用固定摆牌把五班都拦住，并检查第 1 班过关会解锁第 2 班。不放牌、或只放一张工单，第 1 班应当输掉。
 
-## 部署 / Deploy
+`npm run build` 把样式和脚本打进单文件 `play.html`，给不能加载相对路径模块的预览站使用。
 
-静态文件，没有后端。本地多文件站点用相对路径，GitHub Pages 项目页可以直接挂。
+## 部署
 
-`gh-pages` 分支已经推上去了，里面有可玩的 `index.html` 和单文件 `play.html`。开启 Pages 需要仓库管理员：
+静态页面，没有后端。
+
+```bash
+npm run build
+git push origin HEAD:gh-pages
+```
+
+开启 GitHub Pages（需要仓库管理员，当前自动化令牌没有这个权限）：
 
 1. 打开仓库 Settings → Pages。
 2. Build and deployment 选 Deploy from a branch。
 3. Branch 选 `gh-pages`，目录选 `/ (root)`，保存。
 4. 等一分钟，打开 https://ableclaw.github.io/corgi-vs-banban-train/
 
-命令行（令牌需要 Pages 管理权限时）：
+也可以用接口（令牌需要 Pages 管理权限）：
 
 ```bash
-npm run build
-git push origin HEAD:gh-pages
 gh api --method POST repos/ableclaw/corgi-vs-banban-train/pages \
   -f build_type=legacy \
   -f source[branch]=gh-pages \
   -f source[path]=/
 ```
 
-以后更新：
-
-```bash
-npm run build
-git push origin HEAD:gh-pages
-```
-
-`npm run build` 用 esbuild 把脚本打进 `play.html`。GitHub 的 HTML 预览服务不加载相对路径的模块，所以现在的公开链接指向这个单文件。
-
-## 项目结构 / Layout
+## 项目结构
 
 ```
-index.html          标题、选关、对局
-css/style.css       界面
-js/constants.js     短腿跳跃的物理常数
-js/levels.js        五关布局
-js/engine.js        碰撞、受伤、过关
-js/render.js        画面
-js/main.js          键盘、触屏、存档
-test/playability.js 关卡可通关测试
+index.html           标题、选班、对局
+play.html            构建出的单文件，给公开预览用
+css/style.css        界面
+js/catalog.js        流程牌
+js/levels.js         五班时刻表
+js/engine.js         摆牌、需求走动、准点发车
+js/save.js           本机进度
+js/main.js           点击、触屏、键盘
+test/playability.js  可通关测试
 ```

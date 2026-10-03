@@ -3,17 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>柯基闯火车 · Corgi vs. the Release Train</title>
-    <meta
-      name="description"
-      content="短腿柯基没跳过防火墙，从版本火车上摔了下去。一关一关爬回去。A short-legged corgi platformer."
-    />
-    <meta property="og:title" content="柯基闯火车 · Corgi vs. the Release Train" />
-    <meta
-      property="og:description"
-      content="短腿没跳过防火墙，柯基从版本火车上摔了下去。现在它要一关一关爬回去。"
-    />
-    <meta name="theme-color" content="#120c20" />
+    <title>准点发车 · 谁上车谁留下</title>
+    <meta name="description" content="火车准点开，你决定谁上车、谁留下。用流程牌拦住还没准备好的需求。" />
+    <meta name="theme-color" content="#1a1612" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
@@ -23,34 +15,42 @@
         <div class="brand">
           <span class="logo" aria-hidden="true"></span>
           <div>
-            <strong>柯基闯火车</strong>
-            <small>Corgi vs. the Release Train</small>
+            <strong>准点发车</strong>
+            <small>On Time · 版本火车</small>
           </div>
         </div>
-        <button type="button" id="btn-mute" aria-pressed="false">声音开 · Sound</button>
+        <p class="top-joke">火车准点开，你决定谁上车、谁留下。</p>
       </header>
 
       <section id="screen-title" class="screen">
         <div class="hero">
-          <div class="poster-frame">
-            <canvas id="poster" width="800" height="450" aria-label="柯基没跳过防火墙的开场动画"></canvas>
+          <div class="poster" aria-hidden="true">
+            <div class="poster-train">
+              <span>v1.8</span><span>v1.9</span><span>准点</span>
+            </div>
+            <div class="poster-track">
+              <em>暗黑模式</em>
+              <b>需求评审</b>
+              <i>上线站</i>
+            </div>
+            <p>值班柯基只负责把流程牌放下。车，它自己会开。</p>
           </div>
           <div>
-            <p class="eyebrow">浏览器小游戏 · Browser game</p>
-            <h1>柯基闯火车<span>Corgi vs. the Release Train</span></h1>
-            <p class="lore">短腿柯基没跳过防火墙，从版本火车上摔了下去。现在它要一关一关爬回去。</p>
+            <p class="eyebrow">内部排班 · Dispatch</p>
+            <h1>谁上车，谁留下<span>The train leaves on time.</span></h1>
+            <p class="lore">火车准点开，你决定谁上车、谁留下。</p>
             <p class="lore-en">
-              Short legs, tall firewall. The corgi fell off the release train and is climbing back, one build at a time.
+              Features that are not ready miss this departure and wait for the next one. You place the process gates. You do not stop the train.
             </p>
             <div class="actions">
-              <button type="button" id="btn-start">开始闯关 · Start</button>
-              <button type="button" id="btn-levels">关卡选择 · Levels</button>
+              <button type="button" id="btn-start" class="primary">开始排这班 · Start</button>
+              <button type="button" id="btn-levels">选择班次 · Levels</button>
             </div>
             <ul class="help">
-              <li>← → 或 A / D：跑 · Run</li>
-              <li>空格 / ↑ / W：跳，跳不高 · Jump, not very high</li>
-              <li>↓ / S：蹲着钻过去 · Duck</li>
-              <li>防火墙要跳，留缝的墙和热修要蹲，车厢抬起来再冲。</li>
+              <li>每一关是一班准点车，右边是上线站。</li>
+              <li>先有几秒布置窗口，之后牌不能拿起来，但空位还能补。</li>
+              <li>点流程牌，再点轨道格子。拦住标着「别上这班」的需求。</li>
+              <li>车到点就走。目标上车算你输，目标留下算你赢。</li>
             </ul>
           </div>
         </div>
@@ -58,44 +58,46 @@
 
       <section id="screen-select" class="screen" hidden>
         <div class="panel">
-          <h2>关卡选择<span>Level Select</span></h2>
-          <p class="lore-en">通关后解锁下一关。进度存在这台设备上。Clear a level to unlock the next. Progress stays on this device.</p>
+          <h2>选择班次<span>Level select</span></h2>
+          <p class="lore-en">拦住这一班的目标，就解锁下一班。进度存在这台设备上。</p>
           <div id="level-list" class="level-list"></div>
           <div class="actions">
-            <button type="button" id="btn-select-back">返回标题 · Title</button>
+            <button type="button" id="btn-select-back">返回 · Back</button>
             <button type="button" id="btn-reset">重置进度 · Reset</button>
           </div>
         </div>
       </section>
 
       <section id="screen-play" class="screen" hidden>
-        <div class="stage-wrap">
-          <div class="stage">
-            <canvas id="game" width="800" height="450" aria-label="柯基闯火车游戏画面"></canvas>
-            <div class="hud">
-              <div class="hud-level">
-                <strong id="hud-name">第 1 关</strong>
-                <span id="hud-en">Day One</span>
-              </div>
-              <div id="hud-hearts" class="hearts" aria-label="体力"></div>
-              <div class="hud-score">
-                <span>分数 · Score</span>
-                <strong id="hud-score">0</strong>
-              </div>
-            </div>
-            <div class="track" aria-hidden="true"><div id="hud-bar"></div></div>
-            <p id="banner" class="banner" hidden></p>
-            <button type="button" id="btn-pause" class="pause-btn">暂停</button>
-            <div id="modal" class="modal" hidden></div>
+        <div class="play-head">
+          <div>
+            <p id="lv-kicker" class="eyebrow"></p>
+            <h2 id="lv-name"></h2>
+            <p id="lv-blurb"></p>
           </div>
-          <div class="touch" aria-label="触屏操作">
-            <button type="button" data-act="left">←</button>
-            <button type="button" data-act="right">→</button>
-            <button type="button" data-act="duck">蹲<small>Duck</small></button>
-            <button type="button" data-act="jump">跳<small>Jump</small></button>
+          <div class="clock" id="clock-wrap">
+            <span>距发车 · Departure</span>
+            <strong id="clock">0</strong>
+            <em id="phase-label"></em>
           </div>
-          <p class="hint-keys">键盘 · Keyboard：← → 移动，空格 / ↑ 跳跃，↓ 蹲下，P 暂停，M 静音。竖屏能玩，横屏更宽敞。</p>
+          <div class="budget">
+            <span>剩余流程牌</span>
+            <strong id="budget">0</strong>
+            <em id="used-label"></em>
+          </div>
         </div>
+        <p id="hint" class="hint"></p>
+        <ul id="roster" class="roster"></ul>
+        <div class="board-scroll">
+          <div id="board"></div>
+        </div>
+        <div id="palette" class="palette" aria-label="流程牌"></div>
+        <p class="hint-keys">数字键选牌 · 布置时再点一格可拿起 · Z 撤回上一张 · 手机直接点选</p>
+        <p id="toast" class="toast" hidden></p>
+        <div class="play-actions">
+          <button type="button" id="btn-giveup">回选关 · Levels</button>
+        </div>
+        <div id="modal" class="modal" hidden></div>
       </section>
     </div>
     <script type="module" src="js/main.js"></script>

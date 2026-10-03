@@ -1,325 +1,165 @@
-import {
-  BOT_CLEAR_PAD,
-  BOT_TIME_PAD,
-  BOT_WAIT_PAD,
-  DUCK_H,
-  GROUND,
-  PLAYER_W,
-  STAND_H,
-  TUNING,
-  VIEW_W,
-} from "./constants.js";
+import { GATES } from "./catalog.js";
 import { getLevel } from "./levels.js";
 
-const HAZARD_INSET = 8;
-const BODY_INSET = 4;
-
-export function overlap(a, b) {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
-
-export function normalizeSolid(solid) {
-  if (solid.gate) {
-    const gap = solid.gap ?? 48;
-    const h = solid.h ?? 280;
-    return { ...solid, y: GROUND - gap - h, h, gap };
-  }
-  if (solid.kind === "platform") return { ...solid };
-  return { ...solid, y: GROUND - solid.h };
-}
-
-function cloneHazard(hazard) {
-  const copy = { ...hazard };
-  if (hazard.motion === "lift") {
-    copy.y = hazard.ymin;
-    copy.vy = Math.abs(hazard.vy || 100);
-    copy.vx = 0;
-    copy.hang = hazard.pause ?? 1.6;
-  } else if (hazard.motion === "ping") {
-    copy.vx = hazard.vx || 60;
-    copy.vy = 0;
-    copy.hang = 0;
-    if (copy.min == null) copy.min = copy.x;
-    if (copy.max == null) copy.max = copy.x;
-  } else {
-    copy.motion = "still";
-    copy.vx = 0;
-    copy.vy = 0;
-  }
-  return copy;
+export function boardLine(slots) {
+  return (slots / (slots + 1)) * 100;
 }
 
 export function createRun(levelId) {
   const level = getLevel(levelId);
   if (!level) throw new Error(`Unknown level ${levelId}`);
+  const boardX = boardLine(level.slots);
   return {
     level,
-    solids: level.solids.map(normalizeSolid),
-    hazards: level.hazards.map(cloneHazard),
-    pickups: (level.pickups || []).map((pickup) => ({ ...pickup, taken: false })),
-    player: {
-      x: 48,
-      y: GROUND - STAND_H,
-      w: PLAYER_W,
-      h: STAND_H,
-      vx: 0,
-      vy: 0,
-      onGround: true,
-      ducking: false,
-      facing: 1,
-      coyote: 0.12,
-    },
-    hp: 3,
-    maxHp: 3,
+    boardX,
+    slotW: boardX / level.slots,
+    phase: "setup",
+    setupLeft: level.setup,
+    departIn: level.setup + level.duration,
+    total: level.setup + level.duration,
+    obstacles: [],
+    inventory: level.inventory.map((item) => ({ ...item })),
+    features: level.features.map((feature) => ({
+      ...feature,
+      x: 0,
+      hold: 0,
+      seen: {},
+      platform: false,
+      result: "",
+      blocked: "",
+    })),
+    laneCount: Math.max(...level.features.map((feature) => feature.lane)) + 1,
+    win: false,
     score: 0,
-    time: 0,
-    cam: 0,
-    status: "play",
-    checkpoint: 0,
-    invuln: 0.45,
-    shake: 0,
-    jumpBuf: 0,
-    sfx: null,
-    maxX: 48,
-    finishScored: false,
+    departed: false,
   };
 }
 
-export function step(state, input, dt) {
-  const limited = Math.min(Math.max(dt, 0), 0.05);
-  const n = Math.max(1, Math.round(limited / (1 / 120)));
+export function place(state, gateId, lane, slot) {
+  if (state.phase === "departed") return { ok: false, reason: "departed" };
+  if (!GATES[gateId]) return { ok: false, reason: "slot" };
+  const item = state.inventory.find((entry) => entry.id === gateId);
+  if (!item || item.count <= 0) return { ok: false, reason: "empty" };
+  if (!Number.isInteger(slot) || slot < 0 || slot >= state.level.slots) return { ok: false, reason: "slot" };
+  if (!Number.isInteger(lane) || lane < 0 || lane >= state.laneCount) return { ok: false, reason: "lane" };
+  if (state.obstacles.some((obstacle) => obstacle.lane === lane && obstacle.slot === slot)) {
+    return { ok: false, reason: "occupied" };
+  }
+  const feature = state.features.find((item) => item.lane === lane);
+  if (feature && state.phase !== "setup" && feature.x >= (slot + 1) * state.slotW - 0.05) {
+    return { ok: false, reason: "late" };
+  }
+  item.count -= 1;
+  state.obstacles.push({ gate: gateId, lane, slot });
+  return { ok: true };
+}
+
+export function remove(state, lane, slot) {
+  if (state.phase !== "setup") return { ok: false, reason: "locked" };
+  const index = state.obstacles.findIndex((obstacle) => obstacle.lane === lane && obstacle.slot === slot);
+  if (index < 0) return { ok: false, reason: "empty" };
+  const [obstacle] = state.obstacles.splice(index, 1);
+  const item = state.inventory.find((entry) => entry.id === obstacle.gate);
+  if (item) item.count += 1;
+  return { ok: true };
+}
+
+export function step(state, dt) {
+  if (state.phase === "departed") return;
+  const limited = Math.min(0.05, Math.max(0, dt));
+  const n = Math.max(1, Math.ceil(limited / (1 / 60)));
   const sub = limited / n;
-  for (let i = 0; i < n; i += 1) {
-    const subInput = i === 0 ? input : { ...input, jumpPressed: false };
-    stepOnce(state, subInput, sub);
-    if (state.status !== "play") break;
-  }
+  for (let i = 0; i < n; i += 1) stepOnce(state, sub);
 }
 
-function stepOnce(state, input, dt) {
-  if (state.status !== "play") return;
-  state.sfx = null;
-  state.time += dt;
-  state.shake = Math.max(0, state.shake - dt);
-  if (state.invuln > 0) state.invuln -= dt;
-
-  const tuning = TUNING;
-  const p = state.player;
-
-  let dir = 0;
-  if (input.left) dir -= 1;
-  if (input.right) dir += 1;
-  if (dir !== 0) {
-    p.vx += dir * tuning.accel * dt;
-    p.facing = dir;
-  } else {
-    const drop = tuning.friction * dt;
-    if (Math.abs(p.vx) <= drop) p.vx = 0;
-    else p.vx -= Math.sign(p.vx) * drop;
-  }
-  p.vx = clamp(p.vx, -tuning.maxSpeed, tuning.maxSpeed);
-
-  const feet = p.y + p.h;
-  const wantDuck = !!input.duck;
-  p.h = wantDuck ? DUCK_H : STAND_H;
-  p.y = feet - p.h;
-  p.ducking = wantDuck;
-  if (!wantDuck && overlapsSolid(state)) {
-    p.h = DUCK_H;
-    p.y = feet - DUCK_H;
-    p.ducking = true;
-  }
-
-  if (p.onGround) p.coyote = 0.1;
-  else p.coyote = Math.max(0, p.coyote - dt);
-  if (input.jumpPressed) state.jumpBuf = 0.12;
-  else state.jumpBuf = Math.max(0, state.jumpBuf - dt);
-  if (state.jumpBuf > 0 && p.coyote > 0 && !p.ducking) {
-    p.vy = tuning.jumpV;
-    p.onGround = false;
-    p.coyote = 0;
-    state.jumpBuf = 0;
-    state.sfx = "jump";
-  }
-
-  p.vy = Math.min(980, p.vy + tuning.gravity * dt);
-
-  const prevX = p.x;
-  p.x += p.vx * dt;
-  if (p.x < 0) {
-    p.x = 0;
-    p.vx = 0;
-  }
-  const maxX = state.level.length - p.w;
-  if (p.x > maxX) {
-    p.x = maxX;
-    p.vx = 0;
-  }
-  resolveX(state, prevX);
-
-  const prevY = p.y;
-  p.y += p.vy * dt;
-  resolveY(state, prevY);
-
-  for (const hazard of state.hazards) updateHazard(hazard, dt);
-
-  if (state.invuln <= 0) {
-    const body = bodyBox(p, BODY_INSET);
-    for (const hazard of state.hazards) {
-      if (overlap(body, hazardBox(hazard))) {
-        hurt(state);
-        break;
-      }
+function stepOnce(state, dt) {
+  if (state.phase === "departed") return;
+  state.departIn -= dt;
+  if (state.phase === "setup") {
+    state.setupLeft -= dt;
+    if (state.setupLeft <= 0) {
+      state.setupLeft = 0;
+      state.phase = "running";
     }
+  } else if (state.phase === "running") {
+    for (const feature of state.features) moveFeature(state, feature, dt);
   }
-
-  if (state.status !== "play") return;
-
-  const body = bodyBox(p, 0);
-  for (const pickup of state.pickups) {
-    if (pickup.taken) continue;
-    if (overlap(body, pickup)) {
-      pickup.taken = true;
-      state.score += 200;
-      state.sfx = state.sfx || "treat";
-    }
-  }
-
-  for (const mark of state.level.checkpoints) {
-    if (p.x >= mark && mark > state.checkpoint) {
-      state.checkpoint = mark;
-      state.sfx = state.sfx || "check";
-    }
-  }
-
-  if (p.x > state.maxX) {
-    state.score += (p.x - state.maxX) * 0.2;
-    state.maxX = p.x;
-  }
-
-  if (overlap(body, state.level.goal)) {
-    state.status = "clear";
-    if (!state.finishScored) {
-      state.score += 800 + state.hp * 300;
-      state.finishScored = true;
-    }
-    state.sfx = "clear";
-  }
-
-  const camTarget = clamp(p.x - 220, 0, Math.max(0, state.level.length - VIEW_W));
-  const follow = 1 - Math.exp(-dt * 10);
-  state.cam += (camTarget - state.cam) * follow;
+  if (state.departIn <= 0) depart(state);
 }
 
-function resolveX(state, prevX) {
-  const p = state.player;
-  for (const solid of state.solids) {
-    if (!overlap(bodyBox(p, 0), solid)) continue;
-    if (p.x >= prevX) p.x = solid.x - p.w - 0.05;
-    else p.x = solid.x + solid.w + 0.05;
-    p.vx = 0;
+function moveFeature(state, feature, dt) {
+  if (feature.x >= state.boardX) {
+    feature.x = state.boardX;
+    feature.platform = true;
+    feature.blocked = "";
+    return;
   }
-}
+  const slot = slotIndex(state, feature.x);
+  const obstacle = state.obstacles.find((item) => item.lane === feature.lane && item.slot === slot);
+  const gate = obstacle ? GATES[obstacle.gate] : null;
+  const key = obstacle ? `${obstacle.lane}:${obstacle.slot}` : "";
 
-function resolveY(state, prevY) {
-  const p = state.player;
-  p.onGround = false;
-  for (const solid of state.solids) {
-    if (!overlap(bodyBox(p, 0), solid)) continue;
-    const prevBottom = prevY + p.h;
-    if (p.vy >= 0 && prevBottom <= solid.y + 10) {
-      p.y = solid.y - p.h;
-      p.vy = 0;
-      p.onGround = true;
-    } else if (p.vy < 0 && prevY >= solid.y + solid.h - 10) {
-      p.y = solid.y + solid.h + 0.05;
-      p.vy = 0;
-    }
-  }
-  if (p.y + p.h >= GROUND) {
-    p.y = GROUND - p.h;
-    if (p.vy > 0) p.vy = 0;
-    p.onGround = true;
-  }
-}
-
-function updateHazard(hazard, dt) {
-  if (hazard.motion === "lift") {
-    if (hazard.hang > 0) {
-      hazard.hang -= dt;
+  if (gate && !feature.seen[key]) {
+    feature.seen[key] = true;
+    if (gate.effect === "hold") feature.hold = gate.hold;
+    if (gate.effect === "push") {
+      feature.x = Math.max(0, feature.x - gate.push);
+      feature.blocked = gate.name;
       return;
     }
-    hazard.y += hazard.vy * dt;
-    if (hazard.y <= hazard.ymin) {
-      hazard.y = hazard.ymin;
-      hazard.vy = Math.abs(hazard.vy);
-      hazard.hang = hazard.pause ?? 1.6;
-    } else if (hazard.y >= hazard.ymax) {
-      hazard.y = hazard.ymax;
-      hazard.vy = -Math.abs(hazard.vy);
-      hazard.hang = hazard.pause ?? 1.6;
-    }
+  }
+
+  if (gate && gate.effect === "stop") {
+    feature.blocked = gate.name;
     return;
   }
-  if (hazard.motion === "ping") {
-    hazard.x += hazard.vx * dt;
-    if (hazard.x <= hazard.min) {
-      hazard.x = hazard.min;
-      hazard.vx = Math.abs(hazard.vx);
-    } else if (hazard.x >= hazard.max) {
-      hazard.x = hazard.max;
-      hazard.vx = -Math.abs(hazard.vx);
-    }
-  }
-}
-
-function hurt(state) {
-  if (state.invuln > 0 || state.status !== "play") return;
-  state.hp -= 1;
-  state.shake = 0.32;
-  state.invuln = 1.2;
-  if (state.hp <= 0) {
-    state.status = "over";
-    state.sfx = "over";
+  if (feature.hold > 0) {
+    feature.hold = Math.max(0, feature.hold - dt);
+    feature.blocked = gate ? gate.name : "等待";
     return;
   }
-  const p = state.player;
-  p.x = state.checkpoint;
-  p.y = GROUND - STAND_H;
-  p.h = STAND_H;
-  p.vx = 0;
-  p.vy = 0;
-  p.ducking = false;
-  p.onGround = true;
-  state.sfx = "hurt";
+
+  const mult = gate && gate.effect === "slow" ? gate.slow : 1;
+  feature.x += feature.speed * mult * dt;
+  feature.blocked = mult < 1 && gate ? gate.name : "";
+  if (feature.x >= state.boardX) {
+    feature.x = state.boardX;
+    feature.platform = true;
+    feature.blocked = "";
+  }
 }
 
-function overlapsSolid(state) {
-  const box = bodyBox(state.player, 0);
-  return state.solids.some((solid) => overlap(box, solid));
+function slotIndex(state, x) {
+  if (x >= state.boardX) return -1;
+  return Math.min(state.level.slots - 1, Math.max(0, Math.floor(x / state.slotW)));
 }
 
-function bodyBox(player, inset) {
-  return {
-    x: player.x + inset,
-    y: player.y + inset,
-    w: Math.max(4, player.w - inset * 2),
-    h: Math.max(4, player.h - inset * 2),
-  };
+function depart(state) {
+  state.departIn = 0;
+  state.phase = "departed";
+  state.departed = true;
+  for (const feature of state.features) {
+    feature.result = feature.x >= state.boardX - 0.05 ? "boarded" : "missed";
+    feature.platform = feature.result === "boarded";
+    feature.blocked = "";
+  }
+  const targets = state.features.filter((feature) => feature.target);
+  state.win = targets.length > 0 && targets.every((feature) => feature.result === "missed");
+  state.score = state.win ? scoreRun(state) : 0;
 }
 
-function hazardBox(hazard) {
-  const m = HAZARD_INSET;
-  return {
-    x: hazard.x + m,
-    y: hazard.y + m,
-    w: Math.max(6, hazard.w - m * 2),
-    h: Math.max(6, hazard.h - m * 2),
-  };
+function scoreRun(state) {
+  let score = 200;
+  for (const feature of state.features) {
+    if (feature.target && feature.result === "missed") {
+      score += 400 + Math.round((state.boardX - feature.x) * 6);
+    }
+    if (!feature.target && feature.result === "boarded") score += 120;
+  }
+  for (const item of state.inventory) score += item.count * 80;
+  return score;
 }
 
-function clamp(n, a, b) {
-  return Math.max(a, Math.min(b, n));
+export function budgetLeft(state) {
+  return state.inventory.reduce((sum, item) => sum + item.count, 0);
 }
-
-export { BOT_CLEAR_PAD, BOT_TIME_PAD, BOT_WAIT_PAD };
