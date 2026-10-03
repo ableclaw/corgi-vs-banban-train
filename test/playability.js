@@ -42,6 +42,9 @@ const plans = {
 };
 
 for (const level of LEVELS) {
+  for (const feature of level.features.filter((item) => item.target)) {
+    assert(level.brief.includes(feature.name), `L${level.id} brief should name ${feature.name}`);
+  }
   const won = play(level.id, plans[level.id]);
   console.log(`L${level.id} ${level.name}: ${won.win ? "win" : "lose"} ${won.score} ${line(won)}`);
   assert(won.phase === "departed", `L${level.id} train should still depart`);

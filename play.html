@@ -75,7 +75,8 @@ button { font-family: inherit; cursor: pointer; }
 h1, h2 { margin: 0; line-height: 1.15; }
 h1 { font-size: clamp(32px, 5vw, 52px); }
 h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .42em; font-weight: 650; }
-.lore { font-size: 20px; line-height: 1.5; }
+.story { font-size: 22px; line-height: 1.65; margin: 10px 0 8px; }
+.lore { font-size: 18px; line-height: 1.5; color: var(--amber); }
 .lore-en, .help { color: var(--muted); line-height: 1.5; }
 .help { padding-left: 18px; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -93,7 +94,7 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
 .level-card { text-align: left; padding: 12px; min-height: 128px; display: flex; flex-direction: column; gap: 4px; }
 .level-card strong { font-size: 22px; }
 .level-card em { font-style: normal; color: #ffc49a; }
-.level-card .meta, .level-card .lv { color: var(--muted); font-size: 13px; }
+.level-card .meta, .level-card .lv { color: var(--muted); font-size: 13px; line-height: 1.45; }
 .level-card.locked { opacity: .5; }
 
 .play-head { display: grid; grid-template-columns: minmax(0, 1.4fr) 160px 140px; gap: 12px; align-items: stretch; }
@@ -105,7 +106,9 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
 .clock.urgent strong { color: var(--coral); }
 .clock em, .budget em, .budget span, .clock span { color: var(--muted); font-style: normal; font-size: 12px; }
 .budget strong { font-size: 32px; }
+.mission { margin: 8px 0; font-size: 20px; font-weight: 800; color: #ffd0c2; }
 .hint { background: rgba(255, 176, 32, .12); border-radius: 12px; padding: 8px 12px; }
+.result-line { font-size: 20px; line-height: 1.55; }
 .roster { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 8px 0; list-style: none; }
 .roster li { background: #2a221c; border-radius: 999px; padding: 6px 10px; font-size: 14px; }
 .roster li.bad { background: #6e2c2c; }
@@ -113,7 +116,7 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
 .roster li.wait { background: #4a3b22; }
 
 .board-scroll { overflow-x: auto; padding-bottom: 6px; }
-.train-row, .lane { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px; margin: 6px 0; }
+.train-row, .lane { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 8px; margin: 6px 0; }
 .fname, .train-label {
   background: var(--paper); color: var(--ink-2); border-radius: 12px; padding: 8px;
   display: flex; flex-direction: column; justify-content: center;
@@ -121,11 +124,12 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
 .fname em { font-style: normal; font-size: 12px; }
 .lane.target .fname em { color: var(--coral); font-weight: 700; }
 .train-label { background: #3a221f; color: #ffd7cc; }
-.rail, .train-rail { position: relative; display: grid; gap: 6px; min-height: 76px; }
+.rail, .train-rail { position: relative; display: grid; gap: 6px; min-height: 92px; }
 .cell, .station {
-  border-radius: 12px; min-height: 72px; min-width: 0; border: 1px dashed rgba(255,246,234,.25);
-  background: #2c261f; color: var(--ink); padding: 6px; font-weight: 700;
-  font-size: 14px; line-height: 1.25; overflow-wrap: anywhere; touch-action: manipulation;
+  border-radius: 12px; min-height: 92px; min-width: 0; border: 1px dashed rgba(255,246,234,.25);
+  background: #2c261f; color: var(--ink); padding: 28px 6px 8px; font-weight: 800;
+  font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; touch-action: manipulation;
+  display: flex; align-items: flex-end; justify-content: center; text-align: center;
 }
 .cell.passed { opacity: .38; }
 .cell.filled { border-style: solid; background: #4a3b22; }
@@ -135,11 +139,11 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
 .cell.filled.slow { background: #6a4a22; }
 .station { background: #1d4a3c; border-style: solid; display: flex; align-items: center; justify-content: center; }
 .token {
-  position: absolute; top: 22px; z-index: 2; pointer-events: none;
-  background: var(--paper); color: var(--ink-2); border-radius: 999px; padding: 4px 8px;
-  font-size: 13px; font-weight: 800; max-width: 42%; white-space: nowrap; overflow: hidden;
+  position: absolute; top: 6px; z-index: 2; pointer-events: none;
+  background: var(--paper); color: var(--ink-2); border-radius: 999px; padding: 3px 8px;
+  font-size: 13px; font-weight: 800; white-space: nowrap; max-width: none;
 }
-.token.is-target { outline: 2px solid var(--coral); }
+.token.is-target { background: #ffd7cc; outline: 2px solid var(--coral); }
 .train {
   position: absolute; top: 8px; display: flex; gap: 4px; transition: left .12s linear;
 }
@@ -167,6 +171,12 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
 .modal-card h3 { margin: 0 0 8px; font-size: 30px; }
 .modal-card.win { box-shadow: inset 0 0 0 1px rgba(47, 158, 120, .7); }
 .modal-card ul { padding-left: 18px; }
+.brief {
+  position: fixed; inset: 0; z-index: 4; background: rgba(10, 8, 6, .72);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.brief-card { width: min(560px, 100%); background: #2a221c; border-radius: 18px; padding: 22px; border: 1px solid var(--line); }
+.brief-card h2 { font-size: 36px; margin-bottom: 8px; }
 
 @media (max-width: 800px) {
   .hero, .play-head { grid-template-columns: 1fr; }
@@ -174,8 +184,9 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
   .top-joke { text-align: left; }
   .train-row, .lane { grid-template-columns: 1fr; }
   .fname, .train-label { flex-direction: row; justify-content: space-between; align-items: center; }
-  .cell, .station { min-height: 64px; font-size: 12px; }
-  .token { font-size: 12px; max-width: 46%; }
+  .cell, .station { min-height: 84px; font-size: 13px; padding-top: 30px; }
+  .token { font-size: 12px; }
+  .story { font-size: 18px; }
 }
 
 </style>
@@ -197,31 +208,29 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
         <div class="hero">
           <div class="poster" aria-hidden="true">
             <div class="poster-train">
-              <span>v1.8</span><span>v1.9</span><span>准点</span>
+              <span>v2.0</span><span>需求</span><span>准点</span>
             </div>
             <div class="poster-track">
-              <em>暗黑模式</em>
+              <em>暗黑模式 · 别上这班</em>
               <b>需求评审</b>
               <i>上线站</i>
             </div>
-            <p>值班柯基只负责把流程牌放下。车，它自己会开。</p>
+            <p>车自己会开。你只决定谁留下。</p>
           </div>
           <div>
-            <p class="eyebrow">内部排班 · Dispatch</p>
-            <h1>谁上车，谁留下<span>The train leaves on time.</span></h1>
+            <p class="eyebrow">同一班 v2.0</p>
+            <h1>你是发版前的卡点</h1>
+            <p class="story" id="title-story">你是发版前的卡点。这列版本火车到点就开，谁也拦不住车。轨道上标着「别上这班」的需求，这次不能上车。</p>
             <p class="lore">火车准点开，你决定谁上车、谁留下。</p>
-            <p class="lore-en">
-              Features that are not ready miss this departure and wait for the next one. You place the process gates. You do not stop the train.
-            </p>
             <div class="actions">
-              <button type="button" id="btn-start" class="primary">开始排这班 · Start</button>
+              <button type="button" id="btn-start" class="primary">从「需求」开始</button>
               <button type="button" id="btn-levels">选择班次 · Levels</button>
             </div>
             <ul class="help">
-              <li>每一关是一班准点车，右边是上线站。</li>
-              <li>先有几秒布置窗口，之后牌不能拿起来，但空位还能补。</li>
-              <li>点流程牌，再点轨道格子。拦住标着「别上这班」的需求。</li>
-              <li>车到点就走。目标上车算你输，目标留下算你赢。</li>
+              <li>五步是同一班车：需求、评审、联调、封版、发车。</li>
+              <li>每一步开始前，先看要留下哪条需求。</li>
+              <li>点流程牌，再点到那条轨道上。右边是上线站。</li>
+              <li>车到点就走。该留的没赶上，这一步就过了。</li>
             </ul>
           </div>
         </div>
@@ -229,8 +238,8 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
 
       <section id="screen-select" class="screen" hidden>
         <div class="panel">
-          <h2>选择班次<span>Level select</span></h2>
-          <p class="lore-en">拦住这一班的目标，就解锁下一班。进度存在这台设备上。</p>
+          <h2>同一班 v2.0<span>从需求走到发车</span></h2>
+          <p class="story">五步接在一起。每一步拦住不该上的需求，车自己准点开。</p>
           <div id="level-list" class="level-list"></div>
           <div class="actions">
             <button type="button" id="btn-select-back">返回 · Back</button>
@@ -244,6 +253,7 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
           <div>
             <p id="lv-kicker" class="eyebrow"></p>
             <h2 id="lv-name"></h2>
+            <p id="mission" class="mission"></p>
             <p id="lv-blurb"></p>
           </div>
           <div class="clock" id="clock-wrap">
@@ -267,6 +277,15 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
         <p id="toast" class="toast" hidden></p>
         <div class="play-actions">
           <button type="button" id="btn-giveup">回选关 · Levels</button>
+        </div>
+        <div id="brief" class="brief" hidden>
+          <div class="brief-card">
+            <p id="brief-kicker" class="eyebrow"></p>
+            <h2 id="brief-title"></h2>
+            <p id="brief-text" class="story"></p>
+            <p id="brief-goal" class="mission"></p>
+            <button type="button" id="btn-brief" class="primary">开始布置</button>
+          </div>
         </div>
         <div id="modal" class="modal" hidden></div>
       </section>
@@ -292,12 +311,12 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
       id: 1,
       name: "\u9700\u6C42",
       en: "Requirements",
-      blurb: "\u6697\u9ED1\u6A21\u5F0F\u8FD8\u6CA1\u60F3\u6E05\u695A\u3002\u653E\u4E00\u5757\u9700\u6C42\u8BC4\u5BA1\uFF0C\u5B83\u5C31\u8D76\u4E0D\u4E0A\u8FD9\u73ED\u3002",
+      brief: "\u8FD9\u662F v2.0 \u7684\u7B2C\u4E00\u6B65\uFF0C\u8FD8\u5728\u6536\u9700\u6C42\u3002\u6697\u9ED1\u6A21\u5F0F\u6CA1\u5199\u6E05\u695A\uFF0C\u7528\u9700\u6C42\u8BC4\u5BA1\u628A\u5B83\u7559\u4E0B\u3002",
       hint: "\u70B9\u300C\u9700\u6C42\u8BC4\u5BA1\u300D\uFF0C\u518D\u70B9\u5230\u6697\u9ED1\u6A21\u5F0F\u524D\u65B9\u7684\u683C\u5B50\u3002\u5DE5\u5355\u592A\u8F7B\uFF0C\u62E6\u4E0D\u4F4F\u3002",
       setup: 7,
       duration: 11,
       slots: 5,
-      train: ["v1.6", "v1.7", "v1.8"],
+      train: ["v2.0", "\u9700\u6C42", "\u5F85\u53D1"],
       inventory: [
         { id: "review", count: 1 },
         { id: "ticket", count: 1 }
@@ -308,12 +327,12 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
       id: 2,
       name: "\u8BC4\u5BA1",
       en: "Review",
-      blurb: "\u6587\u6848\u53EF\u4EE5\u4E0A\u3002\u5BFC\u51FA\u62A5\u8868\u8FD9\u6B21\u5148\u7559\u4E0B\u3002\u522B\u628A\u724C\u8D34\u9519\u884C\u3002",
+      brief: "\u9700\u6C42\u6536\u5B8C\uFF0C\u540C\u4E00\u73ED v2.0 \u8FDB\u5165\u8BC4\u5BA1\u3002\u5BFC\u51FA\u62A5\u8868\u8FD8\u8FC7\u4E0D\u4E86\u5B89\u5168\u8BC4\u5BA1\uFF0C\u6309\u94AE\u6587\u6848\u53EF\u4EE5\u4E0A\u3002",
       hint: "\u53EA\u6321\u300C\u5BFC\u51FA\u62A5\u8868\u300D\u90A3\u4E00\u884C\u3002\u5B89\u5168\u8BC4\u5BA1\u6216\u9700\u6C42\u8BC4\u5BA1\u90FD\u53EF\u4EE5\u3002",
       setup: 5,
       duration: 12,
       slots: 5,
-      train: ["v1.8", "v1.9", "v1.10"],
+      train: ["v2.0", "\u8BC4\u5BA1", "\u5F85\u53D1"],
       inventory: [
         { id: "review", count: 1 },
         { id: "security", count: 1 }
@@ -327,12 +346,12 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
       id: 3,
       name: "\u8054\u8C03",
       en: "Integration",
-      blurb: "\u652F\u4ED8\u548C\u53D1\u7968\u8FD8\u6CA1\u8054\u901A\u3002\u4E24\u5F20\u300C\u8054\u8C03\u5931\u8D25\u300D\u5404\u653E\u4E00\u884C\uFF0C\u767B\u5F55\u6587\u6848\u522B\u6321\u3002",
+      brief: "\u8BC4\u5BA1\u8FC7\u4E86\uFF0Cv2.0 \u5F00\u59CB\u8054\u8C03\u3002\u652F\u4ED8\u8054\u8C03\u548C\u53D1\u7968\u63A5\u53E3\u8FD8\u6CA1\u901A\uFF0C\u767B\u5F55\u6587\u6848\u53EF\u4EE5\u4E0A\u3002",
       hint: "\u8054\u8C03\u5931\u8D25\u8981\u8D34\u5728\u652F\u4ED8\u3001\u53D1\u7968\u4E0A\u3002\u8D34\u5230\u767B\u5F55\u6587\u6848\u4E0A\uFF0C\u5C31\u6D6A\u8D39\u4E86\u4E00\u5F20\u3002",
       setup: 4,
       duration: 11,
       slots: 5,
-      train: ["v1.9", "v1.10", "v1.11"],
+      train: ["v2.0", "\u8054\u8C03", "\u5F85\u53D1"],
       inventory: [
         { id: "integration", count: 2 },
         { id: "ticket", count: 1 }
@@ -347,12 +366,12 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
       id: 4,
       name: "\u5C01\u7248",
       en: "Code freeze",
-      blurb: "\u6743\u9650\u6539\u9020\u8DD1\u5F97\u5F88\u5FEB\u3002\u70ED\u4FEE\u548C\u5408\u89C4\u90FD\u4E0D\u591F\uFF0C\u9632\u706B\u5899\u53EA\u80FD\u7528\u5728\u5B83\u8EAB\u4E0A\u3002",
+      brief: "\u8054\u8C03\u6536\u5C3E\uFF0Cv2.0 \u51C6\u5907\u5C01\u7248\u3002\u6743\u9650\u6539\u9020\u592A\u8D76\uFF0C\u53EA\u6709\u9632\u706B\u5899\u80FD\u628A\u5B83\u7559\u4E0B\u3002",
       hint: "\u628A\u300C\u9632\u706B\u5899\u300D\u8D34\u5230\u6743\u9650\u6539\u9020\u90A3\u4E00\u884C\u3002\u53E6\u5916\u4E24\u5F20\u724C\u62E6\u4E0D\u4F4F\u5B83\u3002",
       setup: 4,
       duration: 10,
       slots: 5,
-      train: ["v2.0-rc", "v2.0", "\u4E0A\u7EBF"],
+      train: ["v2.0", "\u5C01\u7248", "\u5F85\u53D1"],
       inventory: [
         { id: "firewall", count: 1 },
         { id: "hotfix", count: 1 },
@@ -368,12 +387,12 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
       id: 5,
       name: "\u53D1\u8F66",
       en: "Departure",
-      blurb: "\u8F66\u5F88\u5FEB\u3002\u5C01\u7248\u68C0\u67E5\u7559\u7ED9\u5B9E\u65F6\u98CE\u63A7\uFF0C\u5B89\u5168\u8BC4\u5BA1\u7559\u7ED9\u6279\u91CF\u5BFC\u51FA\u3002",
+      brief: "\u5C01\u7248\u4E4B\u540E\uFF0Cv2.0 \u51C6\u70B9\u53D1\u8F66\u3002\u5B9E\u65F6\u98CE\u63A7\u8981\u8FC7\u5C01\u7248\u68C0\u67E5\uFF0C\u6279\u91CF\u5BFC\u51FA\u8981\u8FC7\u5B89\u5168\u8BC4\u5BA1\u3002",
       hint: "\u98CE\u63A7\u7528\u300C\u5C01\u7248\u68C0\u67E5\u300D\uFF0C\u6279\u91CF\u5BFC\u51FA\u7528\u300C\u5B89\u5168\u8BC4\u5BA1\u300D\u3002\u5408\u89C4\u6253\u4E0D\u56DE\u98CE\u63A7\u3002",
       setup: 3,
       duration: 9,
       slots: 4,
-      train: ["v2.0", "v2.1", "\u53D1\u8F66"],
+      train: ["v2.0", "\u53D1\u8F66", "\u51C6\u70B9"],
       inventory: [
         { id: "freeze", count: 1 },
         { id: "security", count: 1 },
@@ -607,6 +626,7 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
   var selected = null;
   var history = [];
   var settled = false;
+  var briefing = false;
   var toastUntil = 0;
   var lastTs = 0;
   var params = new URLSearchParams(location.search);
@@ -614,13 +634,20 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
   function show(next) {
     mode = next;
     for (const [name, el] of Object.entries(screens)) el.hidden = name !== next;
+    if (next !== "play") {
+      briefing = false;
+      document.querySelector("#brief").hidden = true;
+    }
     if (next === "title") paintStart();
     if (next === "select") renderSelect();
+  }
+  function targetNames(level) {
+    return level.features.filter((feature) => feature.target).map((feature) => feature.name);
   }
   function paintStart() {
     const save = loadSave();
     const level = LEVELS[Math.max(0, save.unlocked - 1)];
-    startButton.textContent = save.unlocked > 1 ? `\u7EE7\u7EED\u7B2C ${level.id} \u73ED \xB7 ${level.name}` : "\u5F00\u59CB\u6392\u8FD9\u73ED \xB7 Start";
+    startButton.textContent = save.unlocked > 1 ? `\u7EE7\u7EED\u7B2C ${level.id} \u6B65 \xB7 ${level.name}` : "\u4ECE\u300C\u9700\u6C42\u300D\u5F00\u59CB";
   }
   function renderSelect() {
     const save = loadSave();
@@ -634,14 +661,14 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
       card.disabled = locked;
       const lv = document.createElement("span");
       lv.className = "lv";
-      lv.textContent = `\u7B2C ${level.id} \u73ED${locked ? " \xB7 \u672A\u89E3\u9501" : ""}`;
+      lv.textContent = `\u7B2C ${level.id} \u6B65${locked ? " \xB7 \u672A\u89E3\u9501" : ""}`;
       const title = document.createElement("strong");
       title.textContent = level.name;
       const en = document.createElement("em");
-      en.textContent = level.en;
+      en.textContent = `\u8981\u7559\u4E0B ${targetNames(level).join("\u3001")}`;
       const meta = document.createElement("span");
       meta.className = "meta";
-      meta.textContent = locked ? "\u5148\u62E6\u4F4F\u4E0A\u4E00\u73ED" : best ? `\u5DF2\u62E6\u4F4F \xB7 ${best} \u5206` : "\u8FD8\u6CA1\u6392\u8FC7";
+      meta.textContent = locked ? "\u5148\u62E6\u4F4F\u4E0A\u4E00\u6B65" : best ? `\u5DF2\u62E6\u4F4F \xB7 ${best} \u5206` : level.brief;
       card.append(lv, title, en, meta);
       card.addEventListener("click", () => startLevel(level.id));
       levelList.appendChild(card);
@@ -657,10 +684,17 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
     selected = run.inventory.find((item) => item.count > 0)?.id ?? null;
     history = [];
     settled = false;
+    briefing = true;
     modal.hidden = true;
     modal.innerHTML = "";
     buildBoard();
     buildPalette();
+    const targets = targetNames(run.level);
+    document.querySelector("#brief-kicker").textContent = `v2.0 \xB7 \u7B2C ${run.level.id} \u6B65`;
+    document.querySelector("#brief-title").textContent = run.level.name;
+    document.querySelector("#brief-text").textContent = run.level.brief;
+    document.querySelector("#brief-goal").textContent = `\u8FD9\u4E00\u6B65\u8981\u7559\u4E0B\uFF1A${targets.join("\u3001")}`;
+    document.querySelector("#brief").hidden = false;
     show("play");
     paint();
   }
@@ -670,7 +704,7 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
     trainRow.className = "train-row";
     const label = document.createElement("div");
     label.className = "train-label";
-    label.textContent = "\u672C\u73ED\u706B\u8F66 \xB7 \u65E0\u4EBA\u80FD\u62E6";
+    label.textContent = "v2.0 \xB7 \u5230\u70B9\u5C31\u5F00";
     const rail = document.createElement("div");
     rail.className = "train-rail";
     const train = document.createElement("div");
@@ -715,7 +749,7 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
         const token = document.createElement("div");
         token.className = `token${feature.target ? " is-target" : ""}`;
         token.dataset.feature = feature.id;
-        token.textContent = feature.name;
+        token.textContent = feature.target ? `${feature.name} \xB7 \u522B\u4E0A\u8FD9\u73ED` : `${feature.name} \xB7 \u53EF\u4EE5\u4E0A`;
         track.appendChild(token);
       }
       row.append(name, track);
@@ -783,15 +817,16 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
   function paint() {
     if (!run) return;
     const level = run.level;
-    document.querySelector("#lv-kicker").textContent = `\u7B2C ${level.id} \u73ED \xB7 ${level.en}`;
+    document.querySelector("#lv-kicker").textContent = `v2.0 \xB7 \u7B2C ${level.id} \u6B65`;
     document.querySelector("#lv-name").textContent = level.name;
-    document.querySelector("#lv-blurb").textContent = level.blurb;
+    document.querySelector("#mission").textContent = `\u8981\u7559\u4E0B\uFF1A${targetNames(level).join("\u3001")}`;
+    document.querySelector("#lv-blurb").textContent = level.brief;
     document.querySelector("#hint").textContent = level.hint;
     const sec = Math.max(0, run.departIn);
     const clock = document.querySelector("#clock");
     clock.textContent = sec < 10 ? sec.toFixed(1) : String(Math.ceil(sec));
     document.querySelector("#clock-wrap").classList.toggle("urgent", sec < 5 && run.phase !== "departed");
-    document.querySelector("#phase-label").textContent = run.phase === "setup" ? `\u5E03\u7F6E\u7A97\u53E3 ${Math.ceil(run.setupLeft)} \u79D2\uFF0C\u724C\u8FD8\u80FD\u62FF\u8D77` : run.phase === "running" ? "\u8F66\u5728\u8D70\u3002\u7A7A\u4F4D\u8FD8\u80FD\u8865\u724C\uFF0C\u4E0D\u80FD\u518D\u62FF\u8D77" : "\u5DF2\u51C6\u70B9\u53D1\u8F66";
+    document.querySelector("#phase-label").textContent = briefing ? "\u5148\u770B\u8981\u7559\u4E0B\u8C01" : run.phase === "setup" ? `\u5E03\u7F6E\u7A97\u53E3 ${Math.ceil(run.setupLeft)} \u79D2\uFF0C\u724C\u8FD8\u80FD\u62FF\u8D77` : run.phase === "running" ? "\u8F66\u5728\u8D70\u3002\u7A7A\u4F4D\u8FD8\u80FD\u8865\u724C\uFF0C\u4E0D\u80FD\u518D\u62FF\u8D77" : "\u5DF2\u51C6\u70B9\u53D1\u8F66";
     document.querySelector("#budget").textContent = String(budgetLeft(run));
     const spent = level.inventory.reduce((sum, item) => sum + item.count, 0) - budgetLeft(run);
     document.querySelector("#used-label").textContent = `\u5DF2\u653E ${spent} \u5F20`;
@@ -828,7 +863,7 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
     for (const feature of run.features) {
       const li = document.createElement("li");
       const status = featureStatus(feature);
-      li.textContent = `${feature.target ? "\u76EE\u6807" : "\u5176\u4ED6"} \xB7 ${feature.name} \xB7 ${status}`;
+      li.textContent = `${feature.name} \xB7 ${feature.target ? "\u522B\u4E0A\u8FD9\u73ED" : "\u53EF\u4EE5\u4E0A"} \xB7 ${status}`;
       if (feature.result === "missed" || feature.blocked && feature.target) li.className = "good";
       else if (feature.result === "boarded" && feature.target) li.className = "bad";
       else if (feature.platform && feature.target) li.className = "wait";
@@ -844,14 +879,20 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
     if (toastUntil && performance.now() > toastUntil) toast.hidden = true;
     if (run.phase === "departed") finish();
   }
+  function resultLine(state) {
+    const boarded = state.features.filter((feature) => feature.result === "boarded").map((feature) => feature.name);
+    const missed = state.features.filter((feature) => feature.result === "missed").map((feature) => feature.name);
+    const parts = [];
+    if (missed.length) parts.push(`${missed.join("\u3001")}\u6CA1\u8D76\u4E0A`);
+    if (boarded.length) parts.push(`${boarded.join("\u3001")}\u4E0A\u8F66\u4E86`);
+    parts.push("\u8FD9\u73ED\u51C6\u70B9\u5F00\u4E86");
+    parts.push(state.win ? "\u4F60\u62E6\u4F4F\u4E86" : "\u6CA1\u62E6\u4F4F");
+    return `${parts.join("\u3002")}\u3002`;
+  }
   function finish() {
     if (settled) return;
     settled = true;
     if (run.win) writeSave(applyClear(loadSave(), run.level.id, run.score));
-    const lines = run.features.map((feature) => {
-      const verb = feature.result === "boarded" ? "\u4E0A\u8F66\u4E86" : "\u6CA1\u8D76\u4E0A";
-      return `${feature.target ? "\u76EE\u6807" : "\u5176\u4ED6"} ${feature.name}\uFF1A${verb}`;
-    });
     const last = run.level.id >= LEVELS.length;
     modal.hidden = false;
     modal.dataset.result = run.win ? "win" : "lose";
@@ -859,17 +900,14 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
     card.className = `modal-card${run.win ? " win" : ""}`;
     const kicker = document.createElement("p");
     kicker.className = "eyebrow";
-    kicker.textContent = run.win ? "Train left on time" : "It shipped";
+    kicker.textContent = `v2.0 \xB7 ${run.level.name}`;
     const title = document.createElement("h3");
-    title.textContent = run.win ? last ? "\u8FD9\u73ED\u51C6\u70B9\u8D70\u4E86" : "\u51C6\u70B9\u5F00\u4E86" : "\u88AB\u8FD9\u73ED\u5E26\u8D70\u4E86";
+    title.textContent = run.win ? last ? "\u62E6\u4F4F\u4E86\uFF0C\u8F66\u4E5F\u5F00\u8D70\u4E86" : "\u62E6\u4F4F\u4E86" : "\u6CA1\u62E6\u4F4F";
     const body = document.createElement("p");
-    body.textContent = run.win ? `\u76EE\u6807\u7559\u4E0B\u4E86\u3002\u706B\u8F66\u81EA\u5DF1\u51C6\u70B9\u5F00\u8D70\u3002\u5206\u6570 ${run.score}\u3002\u8D8A\u65E9\u62E6\u4F4F\u3001\u7A7A\u724C\u8D8A\u591A\u3001\u4E0D\u8BE5\u62E6\u7684\u4E0A\u53BB\u4E86\uFF0C\u5206\u8D8A\u9AD8\u3002` : "\u706B\u8F66\u8FD8\u662F\u51C6\u70B9\u5F00\u4E86\uFF0C\u53EA\u662F\u76EE\u6807\u4E5F\u5728\u8F66\u4E0A\u3002\u4E0B\u4E00\u73ED\u518D\u62E6\u3002";
-    const list = document.createElement("ul");
-    for (const line of lines) {
-      const li = document.createElement("li");
-      li.textContent = line;
-      list.appendChild(li);
-    }
+    body.className = "result-line";
+    body.textContent = resultLine(run);
+    const score = document.createElement("p");
+    score.textContent = run.win ? `\u5206\u6570 ${run.score}\u3002\u8D8A\u65E9\u62E6\u4F4F\uFF0C\u5206\u8D8A\u9AD8\u3002` : "\u8F66\u8FD8\u662F\u51C6\u70B9\u5F00\u4E86\u3002\u518D\u5E03\u7F6E\u4E00\u6B21\u3002";
     const actions = document.createElement("div");
     actions.className = "actions";
     if (run.win && !last) {
@@ -877,29 +915,34 @@ h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .
       next.type = "button";
       next.className = "primary";
       next.dataset.act = "next";
-      next.textContent = "\u4E0B\u4E00\u73ED \xB7 Next";
+      next.textContent = "\u4E0B\u4E00\u6B65";
       actions.appendChild(next);
     }
     const retry = document.createElement("button");
     retry.type = "button";
     retry.dataset.act = "retry";
-    retry.textContent = "\u518D\u6392\u4E00\u6B21 \xB7 Retry";
+    retry.textContent = "\u518D\u5E03\u7F6E\u4E00\u6B21";
     const back = document.createElement("button");
     back.type = "button";
     back.dataset.act = "select";
-    back.textContent = "\u9009\u73ED\u6B21 \xB7 Levels";
+    back.textContent = "\u770B\u8FD9\u4E94\u6B65";
     actions.append(retry, back);
-    card.append(kicker, title, body, list, actions);
+    card.append(kicker, title, body, score, actions);
     modal.innerHTML = "";
     modal.appendChild(card);
   }
   function frame(ts) {
     const dt = Math.min(0.05, lastTs ? (ts - lastTs) / 1e3 : 1 / 60);
     lastTs = ts;
-    if (mode === "play" && run && run.phase !== "departed") step(run, dt);
+    if (mode === "play" && run && !briefing && run.phase !== "departed") step(run, dt);
     if (mode === "play" && run) paint();
     requestAnimationFrame(frame);
   }
+  document.querySelector("#btn-brief").addEventListener("click", () => {
+    briefing = false;
+    document.querySelector("#brief").hidden = true;
+    paint();
+  });
   document.querySelector("#btn-start").addEventListener("click", () => startLevel(loadSave().unlocked || 1));
   document.querySelector("#btn-levels").addEventListener("click", () => show("select"));
   document.querySelector("#btn-select-back").addEventListener("click", () => show("title"));

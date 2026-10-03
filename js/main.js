@@ -31,6 +31,7 @@ let run = null;
 let selected = null;
 let history = [];
 let settled = false;
+let briefing = false;
 let toastUntil = 0;
 let lastTs = 0;
 
@@ -40,14 +41,22 @@ const debug = params.has("debug");
 function show(next) {
   mode = next;
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== next;
+  if (next !== "play") {
+    briefing = false;
+    document.querySelector("#brief").hidden = true;
+  }
   if (next === "title") paintStart();
   if (next === "select") renderSelect();
+}
+
+function targetNames(level) {
+  return level.features.filter((feature) => feature.target).map((feature) => feature.name);
 }
 
 function paintStart() {
   const save = loadSave();
   const level = LEVELS[Math.max(0, save.unlocked - 1)];
-  startButton.textContent = save.unlocked > 1 ? `继续第 ${level.id} 班 · ${level.name}` : "开始排这班 · Start";
+  startButton.textContent = save.unlocked > 1 ? `继续第 ${level.id} 步 · ${level.name}` : "从「需求」开始";
 }
 
 function renderSelect() {
@@ -62,14 +71,14 @@ function renderSelect() {
     card.disabled = locked;
     const lv = document.createElement("span");
     lv.className = "lv";
-    lv.textContent = `第 ${level.id} 班${locked ? " · 未解锁" : ""}`;
+    lv.textContent = `第 ${level.id} 步${locked ? " · 未解锁" : ""}`;
     const title = document.createElement("strong");
     title.textContent = level.name;
     const en = document.createElement("em");
-    en.textContent = level.en;
+    en.textContent = `要留下 ${targetNames(level).join("、")}`;
     const meta = document.createElement("span");
     meta.className = "meta";
-    meta.textContent = locked ? "先拦住上一班" : best ? `已拦住 · ${best} 分` : "还没排过";
+    meta.textContent = locked ? "先拦住上一步" : best ? `已拦住 · ${best} 分` : level.brief;
     card.append(lv, title, en, meta);
     card.addEventListener("click", () => startLevel(level.id));
     levelList.appendChild(card);
@@ -87,10 +96,17 @@ function startLevel(id) {
   selected = run.inventory.find((item) => item.count > 0)?.id ?? null;
   history = [];
   settled = false;
+  briefing = true;
   modal.hidden = true;
   modal.innerHTML = "";
   buildBoard();
   buildPalette();
+  const targets = targetNames(run.level);
+  document.querySelector("#brief-kicker").textContent = `v2.0 · 第 ${run.level.id} 步`;
+  document.querySelector("#brief-title").textContent = run.level.name;
+  document.querySelector("#brief-text").textContent = run.level.brief;
+  document.querySelector("#brief-goal").textContent = `这一步要留下：${targets.join("、")}`;
+  document.querySelector("#brief").hidden = false;
   show("play");
   paint();
 }
@@ -101,7 +117,7 @@ function buildBoard() {
   trainRow.className = "train-row";
   const label = document.createElement("div");
   label.className = "train-label";
-  label.textContent = "本班火车 · 无人能拦";
+  label.textContent = "v2.0 · 到点就开";
   const rail = document.createElement("div");
   rail.className = "train-rail";
   const train = document.createElement("div");
@@ -147,7 +163,7 @@ function buildBoard() {
       const token = document.createElement("div");
       token.className = `token${feature.target ? " is-target" : ""}`;
       token.dataset.feature = feature.id;
-      token.textContent = feature.name;
+      token.textContent = feature.target ? `${feature.name} · 别上这班` : `${feature.name} · 可以上`;
       track.appendChild(token);
     }
     row.append(name, track);
@@ -220,16 +236,18 @@ function featureStatus(feature) {
 function paint() {
   if (!run) return;
   const level = run.level;
-  document.querySelector("#lv-kicker").textContent = `第 ${level.id} 班 · ${level.en}`;
+  document.querySelector("#lv-kicker").textContent = `v2.0 · 第 ${level.id} 步`;
   document.querySelector("#lv-name").textContent = level.name;
-  document.querySelector("#lv-blurb").textContent = level.blurb;
+  document.querySelector("#mission").textContent = `要留下：${targetNames(level).join("、")}`;
+  document.querySelector("#lv-blurb").textContent = level.brief;
   document.querySelector("#hint").textContent = level.hint;
   const sec = Math.max(0, run.departIn);
   const clock = document.querySelector("#clock");
   clock.textContent = sec < 10 ? sec.toFixed(1) : String(Math.ceil(sec));
   document.querySelector("#clock-wrap").classList.toggle("urgent", sec < 5 && run.phase !== "departed");
-  document.querySelector("#phase-label").textContent =
-    run.phase === "setup" ? `布置窗口 ${Math.ceil(run.setupLeft)} 秒，牌还能拿起` :
+  document.querySelector("#phase-label").textContent = briefing
+    ? "先看要留下谁"
+    : run.phase === "setup" ? `布置窗口 ${Math.ceil(run.setupLeft)} 秒，牌还能拿起` :
     run.phase === "running" ? "车在走。空位还能补牌，不能再拿起" :
     "已准点发车";
   document.querySelector("#budget").textContent = String(budgetLeft(run));
@@ -272,7 +290,7 @@ function paint() {
   for (const feature of run.features) {
     const li = document.createElement("li");
     const status = featureStatus(feature);
-    li.textContent = `${feature.target ? "目标" : "其他"} · ${feature.name} · ${status}`;
+    li.textContent = `${feature.name} · ${feature.target ? "别上这班" : "可以上"} · ${status}`;
     if (feature.result === "missed" || (feature.blocked && feature.target)) li.className = "good";
     else if (feature.result === "boarded" && feature.target) li.className = "bad";
     else if (feature.platform && feature.target) li.className = "wait";
@@ -291,14 +309,21 @@ function paint() {
   if (run.phase === "departed") finish();
 }
 
+function resultLine(state) {
+  const boarded = state.features.filter((feature) => feature.result === "boarded").map((feature) => feature.name);
+  const missed = state.features.filter((feature) => feature.result === "missed").map((feature) => feature.name);
+  const parts = [];
+  if (missed.length) parts.push(`${missed.join("、")}没赶上`);
+  if (boarded.length) parts.push(`${boarded.join("、")}上车了`);
+  parts.push("这班准点开了");
+  parts.push(state.win ? "你拦住了" : "没拦住");
+  return `${parts.join("。")}。`;
+}
+
 function finish() {
   if (settled) return;
   settled = true;
   if (run.win) writeSave(applyClear(loadSave(), run.level.id, run.score));
-  const lines = run.features.map((feature) => {
-    const verb = feature.result === "boarded" ? "上车了" : "没赶上";
-    return `${feature.target ? "目标" : "其他"} ${feature.name}：${verb}`;
-  });
   const last = run.level.id >= LEVELS.length;
   modal.hidden = false;
   modal.dataset.result = run.win ? "win" : "lose";
@@ -306,19 +331,14 @@ function finish() {
   card.className = `modal-card${run.win ? " win" : ""}`;
   const kicker = document.createElement("p");
   kicker.className = "eyebrow";
-  kicker.textContent = run.win ? "Train left on time" : "It shipped";
+  kicker.textContent = `v2.0 · ${run.level.name}`;
   const title = document.createElement("h3");
-  title.textContent = run.win ? (last ? "这班准点走了" : "准点开了") : "被这班带走了";
+  title.textContent = run.win ? (last ? "拦住了，车也开走了" : "拦住了") : "没拦住";
   const body = document.createElement("p");
-  body.textContent = run.win
-    ? `目标留下了。火车自己准点开走。分数 ${run.score}。越早拦住、空牌越多、不该拦的上去了，分越高。`
-    : "火车还是准点开了，只是目标也在车上。下一班再拦。";
-  const list = document.createElement("ul");
-  for (const line of lines) {
-    const li = document.createElement("li");
-    li.textContent = line;
-    list.appendChild(li);
-  }
+  body.className = "result-line";
+  body.textContent = resultLine(run);
+  const score = document.createElement("p");
+  score.textContent = run.win ? `分数 ${run.score}。越早拦住，分越高。` : "车还是准点开了。再布置一次。";
   const actions = document.createElement("div");
   actions.className = "actions";
   if (run.win && !last) {
@@ -326,19 +346,19 @@ function finish() {
     next.type = "button";
     next.className = "primary";
     next.dataset.act = "next";
-    next.textContent = "下一班 · Next";
+    next.textContent = "下一步";
     actions.appendChild(next);
   }
   const retry = document.createElement("button");
   retry.type = "button";
   retry.dataset.act = "retry";
-  retry.textContent = "再排一次 · Retry";
+  retry.textContent = "再布置一次";
   const back = document.createElement("button");
   back.type = "button";
   back.dataset.act = "select";
-  back.textContent = "选班次 · Levels";
+  back.textContent = "看这五步";
   actions.append(retry, back);
-  card.append(kicker, title, body, list, actions);
+  card.append(kicker, title, body, score, actions);
   modal.innerHTML = "";
   modal.appendChild(card);
 }
@@ -346,11 +366,16 @@ function finish() {
 function frame(ts) {
   const dt = Math.min(0.05, lastTs ? (ts - lastTs) / 1000 : 1 / 60);
   lastTs = ts;
-  if (mode === "play" && run && run.phase !== "departed") step(run, dt);
+  if (mode === "play" && run && !briefing && run.phase !== "departed") step(run, dt);
   if (mode === "play" && run) paint();
   requestAnimationFrame(frame);
 }
 
+document.querySelector("#btn-brief").addEventListener("click", () => {
+  briefing = false;
+  document.querySelector("#brief").hidden = true;
+  paint();
+});
 document.querySelector("#btn-start").addEventListener("click", () => startLevel(loadSave().unlocked || 1));
 document.querySelector("#btn-levels").addEventListener("click", () => show("select"));
 document.querySelector("#btn-select-back").addEventListener("click", () => show("title"));

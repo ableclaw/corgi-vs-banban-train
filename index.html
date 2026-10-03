@@ -26,31 +26,29 @@
         <div class="hero">
           <div class="poster" aria-hidden="true">
             <div class="poster-train">
-              <span>v1.8</span><span>v1.9</span><span>准点</span>
+              <span>v2.0</span><span>需求</span><span>准点</span>
             </div>
             <div class="poster-track">
-              <em>暗黑模式</em>
+              <em>暗黑模式 · 别上这班</em>
               <b>需求评审</b>
               <i>上线站</i>
             </div>
-            <p>值班柯基只负责把流程牌放下。车，它自己会开。</p>
+            <p>车自己会开。你只决定谁留下。</p>
           </div>
           <div>
-            <p class="eyebrow">内部排班 · Dispatch</p>
-            <h1>谁上车，谁留下<span>The train leaves on time.</span></h1>
+            <p class="eyebrow">同一班 v2.0</p>
+            <h1>你是发版前的卡点</h1>
+            <p class="story" id="title-story">你是发版前的卡点。这列版本火车到点就开，谁也拦不住车。轨道上标着「别上这班」的需求，这次不能上车。</p>
             <p class="lore">火车准点开，你决定谁上车、谁留下。</p>
-            <p class="lore-en">
-              Features that are not ready miss this departure and wait for the next one. You place the process gates. You do not stop the train.
-            </p>
             <div class="actions">
-              <button type="button" id="btn-start" class="primary">开始排这班 · Start</button>
+              <button type="button" id="btn-start" class="primary">从「需求」开始</button>
               <button type="button" id="btn-levels">选择班次 · Levels</button>
             </div>
             <ul class="help">
-              <li>每一关是一班准点车，右边是上线站。</li>
-              <li>先有几秒布置窗口，之后牌不能拿起来，但空位还能补。</li>
-              <li>点流程牌，再点轨道格子。拦住标着「别上这班」的需求。</li>
-              <li>车到点就走。目标上车算你输，目标留下算你赢。</li>
+              <li>五步是同一班车：需求、评审、联调、封版、发车。</li>
+              <li>每一步开始前，先看要留下哪条需求。</li>
+              <li>点流程牌，再点到那条轨道上。右边是上线站。</li>
+              <li>车到点就走。该留的没赶上，这一步就过了。</li>
             </ul>
           </div>
         </div>
@@ -58,8 +56,8 @@
 
       <section id="screen-select" class="screen" hidden>
         <div class="panel">
-          <h2>选择班次<span>Level select</span></h2>
-          <p class="lore-en">拦住这一班的目标，就解锁下一班。进度存在这台设备上。</p>
+          <h2>同一班 v2.0<span>从需求走到发车</span></h2>
+          <p class="story">五步接在一起。每一步拦住不该上的需求，车自己准点开。</p>
           <div id="level-list" class="level-list"></div>
           <div class="actions">
             <button type="button" id="btn-select-back">返回 · Back</button>
@@ -73,6 +71,7 @@
           <div>
             <p id="lv-kicker" class="eyebrow"></p>
             <h2 id="lv-name"></h2>
+            <p id="mission" class="mission"></p>
             <p id="lv-blurb"></p>
           </div>
           <div class="clock" id="clock-wrap">
@@ -96,6 +95,15 @@
         <p id="toast" class="toast" hidden></p>
         <div class="play-actions">
           <button type="button" id="btn-giveup">回选关 · Levels</button>
+        </div>
+        <div id="brief" class="brief" hidden>
+          <div class="brief-card">
+            <p id="brief-kicker" class="eyebrow"></p>
+            <h2 id="brief-title"></h2>
+            <p id="brief-text" class="story"></p>
+            <p id="brief-goal" class="mission"></p>
+            <button type="button" id="btn-brief" class="primary">开始布置</button>
+          </div>
         </div>
         <div id="modal" class="modal" hidden></div>
       </section>
