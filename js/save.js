@@ -1,6 +1,6 @@
 import { LEVELS } from "./levels.js";
 
-export const SAVE_KEY = "corgi-banban-save-v1";
+export const SAVE_KEY = "train-dispatch-save-v1";
 
 export function emptySave() {
   return { unlocked: 1, best: {}, mute: false, cleared: false };
@@ -12,9 +12,10 @@ export function loadSave() {
     if (!raw) return emptySave();
     const data = JSON.parse(raw);
     const max = LEVELS.length;
+    const best = data.best && typeof data.best === "object" ? data.best : {};
     return {
       unlocked: clamp(Number(data.unlocked) || 1, 1, max),
-      best: data.best && typeof data.best === "object" ? data.best : {},
+      best,
       mute: !!data.mute,
       cleared: !!data.cleared,
     };

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "柯基闯火车 / Corgi vs. the Release Train — a browser platformer.",
+  "description": "准点发车：火车准点开，你决定谁上车、谁留下。",
   "scripts": {
     "start": "node scripts/serve.js",
     "dev": "node scripts/serve.js",
