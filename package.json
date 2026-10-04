@@ -1,0 +1,14 @@
+{
+  "name": "corgi-vs-banban-train",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "准点发车：火车准点开，你决定谁上车、谁留下。",
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "dev": "node scripts/serve.js",
+    "build": "node scripts/build.js",
+    "build:next": "node scripts/build-next-train.js",
+    "test": "node test/playability.js && node next-train/test.js"
+  }
+}

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>准点发车 · 谁上车谁留下</title>
+    <meta name="description" content="火车准点开，你决定谁上车、谁留下。用流程牌拦住还没准备好的需求。" />
+    <meta name="theme-color" content="#1a1612" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%20%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%231b1240%22%2F%3E%0A%20%20%3Cellipse%20cx%3D%2230%22%20cy%3D%2238%22%20rx%3D%2218%22%20ry%3D%2212%22%20fill%3D%22%23e5923c%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%2246%22%20cy%3D%2232%22%20r%3D%2210%22%20fill%3D%22%23e5923c%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M40%2024%20L38%2012%20L48%2022%20Z%22%20fill%3D%22%23c56e24%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M48%2022%20L58%2014%20L54%2028%20Z%22%20fill%3D%22%23c56e24%22%2F%3E%0A%20%20%3Cellipse%20cx%3D%2250%22%20cy%3D%2234%22%20rx%3D%225%22%20ry%3D%224%22%20fill%3D%22%23fff7ee%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%2252%22%20cy%3D%2233%22%20r%3D%221.4%22%20fill%3D%22%232a211c%22%2F%3E%0A%20%20%3Crect%20x%3D%2218%22%20y%3D%2248%22%20width%3D%225%22%20height%3D%227%22%20rx%3D%221%22%20fill%3D%22%23c56e24%22%2F%3E%0A%20%20%3Crect%20x%3D%2226%22%20y%3D%2248%22%20width%3D%225%22%20height%3D%227%22%20rx%3D%221%22%20fill%3D%22%23c56e24%22%2F%3E%0A%20%20%3Crect%20x%3D%2234%22%20y%3D%2248%22%20width%3D%225%22%20height%3D%227%22%20rx%3D%221%22%20fill%3D%22%23c56e24%22%2F%3E%0A%3C%2Fsvg%3E%0A" type="image/svg+xml" />
+    <style>
+:root {
+  color-scheme: dark;
+  --bg: #14110e;
+  --ink: #fff6ea;
+  --muted: #e4d2c0;
+  --paper: #f6e7cf;
+  --ink-2: #2a2118;
+  --amber: #ffb020;
+  --coral: #e25b45;
+  --teal: #2f9e78;
+  --line: rgba(255, 246, 234, 0.14);
+  --card: #221c17;
+  font-family: "WenQuanYi Micro Hei", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; min-height: 100%; background: radial-gradient(900px 420px at 0% -10%, #3a2a22, transparent 55%), var(--bg); color: var(--ink); }
+button { font-family: inherit; cursor: pointer; }
+#app { min-height: 100dvh; }
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  padding: 14px 16px 4px;
+}
+.brand { display: flex; gap: 10px; align-items: center; }
+.brand strong { display: block; font-size: 18px; }
+.brand small, .top-joke { color: var(--muted); }
+.top-joke { margin: 0; text-align: right; }
+.logo {
+  width: 42px; height: 30px; border-radius: 14px 16px 10px 12px;
+  background: radial-gradient(circle at 78% 42%, #fff6ea 0 6px, transparent 7px), linear-gradient(#e5923c, #c56e24);
+  box-shadow: inset -8px -5px 0 #c56e24;
+  position: relative;
+}
+.logo::after { content: ""; position: absolute; right: 7px; top: 11px; width: 4px; height: 4px; border-radius: 50%; background: #2a211c; }
+
+.screen { width: min(1120px, 100%); margin: 0 auto; padding: 8px 16px 32px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.9fr); gap: 22px; align-items: center; }
+.poster {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.28);
+}
+.poster-train, .poster-track { display: flex; gap: 8px; align-items: center; }
+.poster-train { margin-bottom: 14px; }
+.poster-train span, .poster-track b, .poster-track i, .poster-track em {
+  border-radius: 10px; padding: 8px 10px; font-style: normal;
+}
+.poster-train span { background: #c4493a; color: white; font-weight: 700; }
+.poster-track { background: #3a3128; border-radius: 12px; padding: 10px; }
+.poster-track em { background: var(--paper); color: var(--ink-2); }
+.poster-track b { background: #ffb020; color: #2a2118; }
+.poster-track i { margin-left: auto; background: #2f9e78; color: white; }
+.poster p { color: var(--muted); }
+
+.eyebrow { margin: 0 0 6px; color: var(--amber); letter-spacing: .08em; font-size: 13px; }
+h1, h2 { margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(32px, 5vw, 52px); }
+h1 span, h2 span { display: block; margin-top: 6px; color: #ffc49a; font-size: .42em; font-weight: 650; }
+.story { font-size: 22px; line-height: 1.65; margin: 10px 0 8px; }
+.lore { font-size: 18px; line-height: 1.5; color: var(--amber); }
+.lore-en, .help { color: var(--muted); line-height: 1.5; }
+.help { padding-left: 18px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.primary, #btn-start {
+  background: linear-gradient(#ffc14d, #ff9d32);
+  color: #2a160c; border: 0; border-radius: 999px; padding: 12px 18px; font-weight: 800; font-size: 16px;
+}
+.actions button, .play-actions button, .level-card, .gate {
+  border: 1px solid var(--line); background: rgba(255,246,234,.06); color: var(--ink); border-radius: 14px;
+}
+.actions button { border-radius: 999px; padding: 10px 14px; }
+
+.panel { background: rgba(34,28,23,.92); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+.level-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.level-card { text-align: left; padding: 12px; min-height: 128px; display: flex; flex-direction: column; gap: 4px; }
+.level-card strong { font-size: 22px; }
+.level-card em { font-style: normal; color: #ffc49a; }
+.level-card .meta, .level-card .lv { color: var(--muted); font-size: 13px; line-height: 1.45; }
+.level-card.locked { opacity: .5; }
+
+.play-head { display: grid; grid-template-columns: minmax(0, 1.4fr) 160px 140px; gap: 12px; align-items: stretch; }
+.clock, .budget {
+  background: #2a221c; border-radius: 16px; padding: 10px 12px; border: 1px solid var(--line);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.clock strong { font-size: 40px; color: var(--amber); line-height: 1; font-variant-numeric: tabular-nums; }
+.clock.urgent strong { color: var(--coral); }
+.clock em, .budget em, .budget span, .clock span { color: var(--muted); font-style: normal; font-size: 12px; }
+.budget strong { font-size: 32px; }
+.mission { margin: 8px 0; font-size: 20px; font-weight: 800; color: #ffd0c2; }
+.hint { background: rgba(255, 176, 32, .12); border-radius: 12px; padding: 8px 12px; }
+.result-line { font-size: 20px; line-height: 1.55; }
+.roster { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 8px 0; list-style: none; }
+.roster li { background: #2a221c; border-radius: 999px; padding: 6px 10px; font-size: 14px; }
+.roster li.bad { background: #6e2c2c; }
+.roster li.good { background: #1d4a3c; }
+.roster li.wait { background: #4a3b22; }
+
+.board-scroll { overflow-x: auto; padding-bottom: 6px; }
+.train-row, .lane { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 8px; margin: 6px 0; }
+.fname, .train-label {
+  background: var(--paper); color: var(--ink-2); border-radius: 12px; padding: 8px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.fname em { font-style: normal; font-size: 12px; }
+.lane.target .fname em { color: var(--coral); font-weight: 700; }
+.train-label { background: #3a221f; color: #ffd7cc; }
+.rail, .train-rail { position: relative; display: grid; gap: 6px; min-height: 92px; }
+.cell, .station {
+  border-radius: 12px; min-height: 92px; min-width: 0; border: 1px dashed rgba(255,246,234,.25);
+  background: #2c261f; color: var(--ink); padding: 28px 6px 8px; font-weight: 800;
+  font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; touch-action: manipulation;
+  display: flex; align-items: flex-end; justify-content: center; text-align: center;
+}
+.cell.passed { opacity: .38; }
+.cell.filled { border-style: solid; background: #4a3b22; }
+.cell.filled.stop { background: #3d4d66; }
+.cell.filled.hold { background: #5a3b55; }
+.cell.filled.push { background: #5a4632; }
+.cell.filled.slow { background: #6a4a22; }
+.station { background: #1d4a3c; border-style: solid; display: flex; align-items: center; justify-content: center; }
+.token {
+  position: absolute; top: 6px; z-index: 2; pointer-events: none;
+  background: var(--paper); color: var(--ink-2); border-radius: 999px; padding: 3px 8px;
+  font-size: 13px; font-weight: 800; white-space: nowrap; max-width: none;
+}
+.token.is-target { background: #ffd7cc; outline: 2px solid var(--coral); }
+.train {
+  position: absolute; top: 8px; display: flex; gap: 4px; transition: left .12s linear;
+}
+.train span, .car {
+  background: #c4493a; color: white; border-radius: 8px 10px 6px 6px; padding: 6px 8px; font-size: 12px; font-weight: 800;
+}
+.train.gone { transform: translateX(40px); opacity: .35; }
+.train-rail { background: repeating-linear-gradient(90deg, transparent, transparent 18px, rgba(255,246,234,.08) 19px); border-radius: 12px; min-height: 52px; }
+
+.palette { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.gate { min-height: 64px; min-width: 140px; text-align: left; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; touch-action: manipulation; }
+.gate b { font-size: 16px; }
+.gate small, .gate em { color: var(--muted); font-style: normal; }
+.gate.on { outline: 2px solid var(--amber); background: rgba(255, 176, 32, .16); }
+.gate:disabled { opacity: .4; }
+.hint-keys, .toast { color: var(--muted); font-size: 13px; }
+.toast { color: var(--amber); }
+.play-actions { margin-top: 8px; }
+
+.modal {
+  position: fixed; inset: 0; background: rgba(10, 8, 6, .66);
+  display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 5;
+}
+.modal-card { width: min(480px, 100%); background: #2a221c; border-radius: 18px; padding: 18px; border: 1px solid var(--line); }
+.modal-card h3 { margin: 0 0 8px; font-size: 30px; }
+.modal-card.win { box-shadow: inset 0 0 0 1px rgba(47, 158, 120, .7); }
+.modal-card ul { padding-left: 18px; }
+.brief {
+  position: fixed; inset: 0; z-index: 4; background: rgba(10, 8, 6, .72);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.brief-card { width: min(560px, 100%); background: #2a221c; border-radius: 18px; padding: 22px; border: 1px solid var(--line); }
+.brief-card h2 { font-size: 36px; margin-bottom: 8px; }
+
+@media (max-width: 800px) {
+  .hero, .play-head { grid-template-columns: 1fr; }
+  .topbar { flex-direction: column; align-items: flex-start; }
+  .top-joke { text-align: left; }
+  .train-row, .lane { grid-template-columns: 1fr; }
+  .fname, .train-label { flex-direction: row; justify-content: space-between; align-items: center; }
+  .cell, .station { min-height: 84px; font-size: 13px; padding-top: 30px; }
+  .token { font-size: 12px; }
+  .story { font-size: 18px; }
+}
+
+</style>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="logo" aria-hidden="true"></span>
+          <div>
+            <strong>准点发车</strong>
+            <small>On Time · 版本火车</small>
+          </div>
+        </div>
+        <p class="top-joke">火车准点开，你决定谁上车、谁留下。</p>
+      </header>
+
+      <section id="screen-title" class="screen">
+        <div class="hero">
+          <div class="poster" aria-hidden="true">
+            <div class="poster-train">
+              <span>v2.0</span><span>需求</span><span>准点</span>
+            </div>
+            <div class="poster-track">
+              <em>暗黑模式 · 别上这班</em>
+              <b>需求评审</b>
+              <i>上线站</i>
+            </div>
+            <p>车自己会开。你只决定谁留下。</p>
+          </div>
+          <div>
+            <p class="eyebrow">同一班 v2.0</p>
+            <h1>你是发版前的卡点</h1>
+            <p class="story" id="title-story">你是发版前的卡点。这列版本火车到点就开，谁也拦不住车。轨道上标着「别上这班」的需求，这次不能上车。</p>
+            <p class="lore">火车准点开，你决定谁上车、谁留下。</p>
+            <div class="actions">
+              <button type="button" id="btn-start" class="primary">从「需求」开始</button>
+              <button type="button" id="btn-levels">选择班次 · Levels</button>
+            </div>
+            <ul class="help">
+              <li>五步是同一班车：需求、评审、联调、封版、发车。</li>
+              <li>每一步开始前，先看要留下哪条需求。</li>
+              <li>点流程牌，再点到那条轨道上。右边是上线站。</li>
+              <li>车到点就走。该留的没赶上，这一步就过了。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-select" class="screen" hidden>
+        <div class="panel">
+          <h2>同一班 v2.0<span>从需求走到发车</span></h2>
+          <p class="story">五步接在一起。每一步拦住不该上的需求，车自己准点开。</p>
+          <div id="level-list" class="level-list"></div>
+          <div class="actions">
+            <button type="button" id="btn-select-back">返回 · Back</button>
+            <button type="button" id="btn-reset">重置进度 · Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-play" class="screen" hidden>
+        <div class="play-head">
+          <div>
+            <p id="lv-kicker" class="eyebrow"></p>
+            <h2 id="lv-name"></h2>
+            <p id="mission" class="mission"></p>
+            <p id="lv-blurb"></p>
+          </div>
+          <div class="clock" id="clock-wrap">
+            <span>距发车 · Departure</span>
+            <strong id="clock">0</strong>
+            <em id="phase-label"></em>
+          </div>
+          <div class="budget">
+            <span>剩余流程牌</span>
+            <strong id="budget">0</strong>
+            <em id="used-label"></em>
+          </div>
+        </div>
+        <p id="hint" class="hint"></p>
+        <ul id="roster" class="roster"></ul>
+        <div class="board-scroll">
+          <div id="board"></div>
+        </div>
+        <div id="palette" class="palette" aria-label="流程牌"></div>
+        <p class="hint-keys">数字键选牌 · 布置时再点一格可拿起 · Z 撤回上一张 · 手机直接点选</p>
+        <p id="toast" class="toast" hidden></p>
+        <div class="play-actions">
+          <button type="button" id="btn-giveup">回选关 · Levels</button>
+        </div>
+        <div id="brief" class="brief" hidden>
+          <div class="brief-card">
+            <p id="brief-kicker" class="eyebrow"></p>
+            <h2 id="brief-title"></h2>
+            <p id="brief-text" class="story"></p>
+            <p id="brief-goal" class="mission"></p>
+            <button type="button" id="btn-brief" class="primary">开始布置</button>
+          </div>
+        </div>
+        <div id="modal" class="modal" hidden></div>
+      </section>
+    </div>
+    <script>
+(() => {
+  // js/catalog.js
+  var GATES = {
+    firewall: { name: "\u9632\u706B\u5899", en: "Firewall", effect: "stop", detail: "\u4E00\u76F4\u6321\u4F4F\uFF0C\u8FC7\u4E0D\u53BB" },
+    review: { name: "\u9700\u6C42\u8BC4\u5BA1", en: "Spec review", effect: "slow", slow: 0.28, detail: "\u8FC7\u8FD9\u4E00\u683C\u4F1A\u53D8\u5F97\u5F88\u6162" },
+    security: { name: "\u5B89\u5168\u8BC4\u5BA1", en: "Security review", effect: "hold", hold: 3.6, detail: "\u62C9\u53BB\u5F00\u4F1A\uFF0C\u5E72\u7B49\u4E00\u4F1A\u513F" },
+    compliance: { name: "\u5408\u89C4", en: "Compliance", effect: "push", push: 18, detail: "\u6253\u56DE\u53BB\u8865\u6750\u6599" },
+    integration: { name: "\u8054\u8C03\u5931\u8D25", en: "Integration failed", effect: "hold", hold: 4.4, detail: "\u63A5\u53E3\u6CA1\u901A\uFF0C\u5E72\u7B49" },
+    ticket: { name: "\u5DE5\u5355", en: "Ticket", effect: "slow", slow: 0.65, detail: "\u6392\u4E2A\u77ED\u961F" },
+    hotfix: { name: "\u70ED\u4FEE", en: "Hotfix", effect: "hold", hold: 1.5, detail: "\u4E34\u65F6\u5019\u8865\u4E00\u4E0B" },
+    freeze: { name: "\u5C01\u7248\u68C0\u67E5", en: "Code freeze", effect: "stop", detail: "\u5C01\u7248\u4E86\uFF0C\u522B\u8FDB\u7AD9" }
+  };
+  var GATE_ORDER = Object.keys(GATES);
+
+  // js/levels.js
+  var LEVELS = [
+    {
+      id: 1,
+      name: "\u9700\u6C42",
+      en: "Requirements",
+      brief: "\u8FD9\u662F v2.0 \u7684\u7B2C\u4E00\u6B65\uFF0C\u8FD8\u5728\u6536\u9700\u6C42\u3002\u6697\u9ED1\u6A21\u5F0F\u6CA1\u5199\u6E05\u695A\uFF0C\u7528\u9700\u6C42\u8BC4\u5BA1\u628A\u5B83\u7559\u4E0B\u3002",
+      hint: "\u70B9\u300C\u9700\u6C42\u8BC4\u5BA1\u300D\uFF0C\u518D\u70B9\u5230\u6697\u9ED1\u6A21\u5F0F\u524D\u65B9\u7684\u683C\u5B50\u3002\u5DE5\u5355\u592A\u8F7B\uFF0C\u62E6\u4E0D\u4F4F\u3002",
+      setup: 7,
+      duration: 11,
+      slots: 5,
+      train: ["v2.0", "\u9700\u6C42", "\u5F85\u53D1"],
+      inventory: [
+        { id: "review", count: 1 },
+        { id: "ticket", count: 1 }
+      ],
+      features: [{ id: "dark", name: "\u6697\u9ED1\u6A21\u5F0F", lane: 0, speed: 9, target: true }]
+    },
+    {
+      id: 2,
+      name: "\u8BC4\u5BA1",
+      en: "Review",
+      brief: "\u9700\u6C42\u6536\u5B8C\uFF0C\u540C\u4E00\u73ED v2.0 \u8FDB\u5165\u8BC4\u5BA1\u3002\u5BFC\u51FA\u62A5\u8868\u8FD8\u8FC7\u4E0D\u4E86\u5B89\u5168\u8BC4\u5BA1\uFF0C\u6309\u94AE\u6587\u6848\u53EF\u4EE5\u4E0A\u3002",
+      hint: "\u53EA\u6321\u300C\u5BFC\u51FA\u62A5\u8868\u300D\u90A3\u4E00\u884C\u3002\u5B89\u5168\u8BC4\u5BA1\u6216\u9700\u6C42\u8BC4\u5BA1\u90FD\u53EF\u4EE5\u3002",
+      setup: 5,
+      duration: 12,
+      slots: 5,
+      train: ["v2.0", "\u8BC4\u5BA1", "\u5F85\u53D1"],
+      inventory: [
+        { id: "review", count: 1 },
+        { id: "security", count: 1 }
+      ],
+      features: [
+        { id: "copy", name: "\u6309\u94AE\u6587\u6848", lane: 0, speed: 11.5, target: false },
+        { id: "export", name: "\u5BFC\u51FA\u62A5\u8868", lane: 1, speed: 8, target: true }
+      ]
+    },
+    {
+      id: 3,
+      name: "\u8054\u8C03",
+      en: "Integration",
+      brief: "\u8BC4\u5BA1\u8FC7\u4E86\uFF0Cv2.0 \u5F00\u59CB\u8054\u8C03\u3002\u652F\u4ED8\u8054\u8C03\u548C\u53D1\u7968\u63A5\u53E3\u8FD8\u6CA1\u901A\uFF0C\u767B\u5F55\u6587\u6848\u53EF\u4EE5\u4E0A\u3002",
+      hint: "\u8054\u8C03\u5931\u8D25\u8981\u8D34\u5728\u652F\u4ED8\u3001\u53D1\u7968\u4E0A\u3002\u8D34\u5230\u767B\u5F55\u6587\u6848\u4E0A\uFF0C\u5C31\u6D6A\u8D39\u4E86\u4E00\u5F20\u3002",
+      setup: 4,
+      duration: 11,
+      slots: 5,
+      train: ["v2.0", "\u8054\u8C03", "\u5F85\u53D1"],
+      inventory: [
+        { id: "integration", count: 2 },
+        { id: "ticket", count: 1 }
+      ],
+      features: [
+        { id: "login", name: "\u767B\u5F55\u6587\u6848", lane: 0, speed: 12.2, target: false },
+        { id: "pay", name: "\u652F\u4ED8\u8054\u8C03", lane: 1, speed: 9.6, target: true },
+        { id: "invoice", name: "\u53D1\u7968\u63A5\u53E3", lane: 2, speed: 8.8, target: true }
+      ]
+    },
+    {
+      id: 4,
+      name: "\u5C01\u7248",
+      en: "Code freeze",
+      brief: "\u8054\u8C03\u6536\u5C3E\uFF0Cv2.0 \u51C6\u5907\u5C01\u7248\u3002\u6743\u9650\u6539\u9020\u592A\u8D76\uFF0C\u53EA\u6709\u9632\u706B\u5899\u80FD\u628A\u5B83\u7559\u4E0B\u3002",
+      hint: "\u628A\u300C\u9632\u706B\u5899\u300D\u8D34\u5230\u6743\u9650\u6539\u9020\u90A3\u4E00\u884C\u3002\u53E6\u5916\u4E24\u5F20\u724C\u62E6\u4E0D\u4F4F\u5B83\u3002",
+      setup: 4,
+      duration: 10,
+      slots: 5,
+      train: ["v2.0", "\u5C01\u7248", "\u5F85\u53D1"],
+      inventory: [
+        { id: "firewall", count: 1 },
+        { id: "hotfix", count: 1 },
+        { id: "compliance", count: 1 }
+      ],
+      features: [
+        { id: "help", name: "\u5E2E\u52A9\u4E2D\u5FC3", lane: 0, speed: 10, target: false },
+        { id: "auth", name: "\u6743\u9650\u6539\u9020", lane: 1, speed: 13.5, target: true },
+        { id: "legacy", name: "\u65E7\u63A5\u53E3\u4E0B\u7EBF", lane: 2, speed: 9.4, target: false }
+      ]
+    },
+    {
+      id: 5,
+      name: "\u53D1\u8F66",
+      en: "Departure",
+      brief: "\u5C01\u7248\u4E4B\u540E\uFF0Cv2.0 \u51C6\u70B9\u53D1\u8F66\u3002\u5B9E\u65F6\u98CE\u63A7\u8981\u8FC7\u5C01\u7248\u68C0\u67E5\uFF0C\u6279\u91CF\u5BFC\u51FA\u8981\u8FC7\u5B89\u5168\u8BC4\u5BA1\u3002",
+      hint: "\u98CE\u63A7\u7528\u300C\u5C01\u7248\u68C0\u67E5\u300D\uFF0C\u6279\u91CF\u5BFC\u51FA\u7528\u300C\u5B89\u5168\u8BC4\u5BA1\u300D\u3002\u5408\u89C4\u6253\u4E0D\u56DE\u98CE\u63A7\u3002",
+      setup: 3,
+      duration: 9,
+      slots: 4,
+      train: ["v2.0", "\u53D1\u8F66", "\u51C6\u70B9"],
+      inventory: [
+        { id: "freeze", count: 1 },
+        { id: "security", count: 1 },
+        { id: "compliance", count: 1 }
+      ],
+      features: [
+        { id: "popup", name: "\u8425\u9500\u5F39\u7A97", lane: 0, speed: 12, target: false },
+        { id: "risk", name: "\u5B9E\u65F6\u98CE\u63A7", lane: 1, speed: 14, target: true },
+        { id: "track", name: "\u57CB\u70B9\u8865\u9F50", lane: 2, speed: 11, target: false },
+        { id: "batch", name: "\u6279\u91CF\u5BFC\u51FA", lane: 3, speed: 10.4, target: true }
+      ]
+    }
+  ];
+  function getLevel(id) {
+    return LEVELS.find((level) => level.id === id) || null;
+  }
+
+  // js/engine.js
+  function boardLine(slots) {
+    return slots / (slots + 1) * 100;
+  }
+  function createRun(levelId) {
+    const level = getLevel(levelId);
+    if (!level) throw new Error(`Unknown level ${levelId}`);
+    const boardX = boardLine(level.slots);
+    return {
+      level,
+      boardX,
+      slotW: boardX / level.slots,
+      phase: "setup",
+      setupLeft: level.setup,
+      departIn: level.setup + level.duration,
+      total: level.setup + level.duration,
+      obstacles: [],
+      inventory: level.inventory.map((item) => ({ ...item })),
+      features: level.features.map((feature) => ({
+        ...feature,
+        x: 0,
+        hold: 0,
+        seen: {},
+        platform: false,
+        result: "",
+        blocked: ""
+      })),
+      laneCount: Math.max(...level.features.map((feature) => feature.lane)) + 1,
+      win: false,
+      score: 0,
+      departed: false
+    };
+  }
+  function place(state, gateId, lane, slot) {
+    if (state.phase === "departed") return { ok: false, reason: "departed" };
+    if (!GATES[gateId]) return { ok: false, reason: "slot" };
+    const item = state.inventory.find((entry) => entry.id === gateId);
+    if (!item || item.count <= 0) return { ok: false, reason: "empty" };
+    if (!Number.isInteger(slot) || slot < 0 || slot >= state.level.slots) return { ok: false, reason: "slot" };
+    if (!Number.isInteger(lane) || lane < 0 || lane >= state.laneCount) return { ok: false, reason: "lane" };
+    if (state.obstacles.some((obstacle) => obstacle.lane === lane && obstacle.slot === slot)) {
+      return { ok: false, reason: "occupied" };
+    }
+    const feature = state.features.find((item2) => item2.lane === lane);
+    if (feature && state.phase !== "setup" && feature.x >= (slot + 1) * state.slotW - 0.05) {
+      return { ok: false, reason: "late" };
+    }
+    item.count -= 1;
+    state.obstacles.push({ gate: gateId, lane, slot });
+    return { ok: true };
+  }
+  function remove(state, lane, slot) {
+    if (state.phase !== "setup") return { ok: false, reason: "locked" };
+    const index = state.obstacles.findIndex((obstacle2) => obstacle2.lane === lane && obstacle2.slot === slot);
+    if (index < 0) return { ok: false, reason: "empty" };
+    const [obstacle] = state.obstacles.splice(index, 1);
+    const item = state.inventory.find((entry) => entry.id === obstacle.gate);
+    if (item) item.count += 1;
+    return { ok: true };
+  }
+  function step(state, dt) {
+    if (state.phase === "departed") return;
+    const limited = Math.min(0.05, Math.max(0, dt));
+    const n = Math.max(1, Math.ceil(limited / (1 / 60)));
+    const sub = limited / n;
+    for (let i = 0; i < n; i += 1) stepOnce(state, sub);
+  }
+  function stepOnce(state, dt) {
+    if (state.phase === "departed") return;
+    state.departIn -= dt;
+    if (state.phase === "setup") {
+      state.setupLeft -= dt;
+      if (state.setupLeft <= 0) {
+        state.setupLeft = 0;
+        state.phase = "running";
+      }
+    } else if (state.phase === "running") {
+      for (const feature of state.features) moveFeature(state, feature, dt);
+    }
+    if (state.departIn <= 0) depart(state);
+  }
+  function moveFeature(state, feature, dt) {
+    if (feature.x >= state.boardX) {
+      feature.x = state.boardX;
+      feature.platform = true;
+      feature.blocked = "";
+      return;
+    }
+    const slot = slotIndex(state, feature.x);
+    const obstacle = state.obstacles.find((item) => item.lane === feature.lane && item.slot === slot);
+    const gate = obstacle ? GATES[obstacle.gate] : null;
+    const key = obstacle ? `${obstacle.lane}:${obstacle.slot}` : "";
+    if (gate && !feature.seen[key]) {
+      feature.seen[key] = true;
+      if (gate.effect === "hold") feature.hold = gate.hold;
+      if (gate.effect === "push") {
+        feature.x = Math.max(0, feature.x - gate.push);
+        feature.blocked = gate.name;
+        return;
+      }
+    }
+    if (gate && gate.effect === "stop") {
+      feature.blocked = gate.name;
+      return;
+    }
+    if (feature.hold > 0) {
+      feature.hold = Math.max(0, feature.hold - dt);
+      feature.blocked = gate ? gate.name : "\u7B49\u5F85";
+      return;
+    }
+    const mult = gate && gate.effect === "slow" ? gate.slow : 1;
+    feature.x += feature.speed * mult * dt;
+    feature.blocked = mult < 1 && gate ? gate.name : "";
+    if (feature.x >= state.boardX) {
+      feature.x = state.boardX;
+      feature.platform = true;
+      feature.blocked = "";
+    }
+  }
+  function slotIndex(state, x) {
+    if (x >= state.boardX) return -1;
+    return Math.min(state.level.slots - 1, Math.max(0, Math.floor(x / state.slotW)));
+  }
+  function depart(state) {
+    state.departIn = 0;
+    state.phase = "departed";
+    state.departed = true;
+    for (const feature of state.features) {
+      feature.result = feature.x >= state.boardX - 0.05 ? "boarded" : "missed";
+      feature.platform = feature.result === "boarded";
+      feature.blocked = "";
+    }
+    const targets = state.features.filter((feature) => feature.target);
+    state.win = targets.length > 0 && targets.every((feature) => feature.result === "missed");
+    state.score = state.win ? scoreRun(state) : 0;
+  }
+  function scoreRun(state) {
+    let score = 200;
+    for (const feature of state.features) {
+      if (feature.target && feature.result === "missed") {
+        score += 400 + Math.round((state.boardX - feature.x) * 6);
+      }
+      if (!feature.target && feature.result === "boarded") score += 120;
+    }
+    for (const item of state.inventory) score += item.count * 80;
+    return score;
+  }
+  function budgetLeft(state) {
+    return state.inventory.reduce((sum, item) => sum + item.count, 0);
+  }
+
+  // js/save.js
+  var SAVE_KEY = "train-dispatch-save-v1";
+  function emptySave() {
+    return { unlocked: 1, best: {}, mute: false, cleared: false };
+  }
+  function loadSave() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return emptySave();
+      const data = JSON.parse(raw);
+      const max = LEVELS.length;
+      const best = data.best && typeof data.best === "object" ? data.best : {};
+      return {
+        unlocked: clamp(Number(data.unlocked) || 1, 1, max),
+        best,
+        mute: !!data.mute,
+        cleared: !!data.cleared
+      };
+    } catch {
+      return emptySave();
+    }
+  }
+  function writeSave(save) {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+    return save;
+  }
+  function applyClear(save, levelId, score, levelCount = LEVELS.length) {
+    const next = { ...save, best: { ...save.best } };
+    const rounded = Math.max(0, Math.round(score));
+    next.best[levelId] = Math.max(Number(next.best[levelId]) || 0, rounded);
+    if (levelId < levelCount) next.unlocked = Math.max(next.unlocked || 1, levelId + 1);
+    if (levelId >= levelCount) next.cleared = true;
+    return next;
+  }
+  function clamp(n, a, b) {
+    return Math.max(a, Math.min(b, n));
+  }
+
+  // js/main.js
+  var REASONS = {
+    empty: "\u8FD9\u79CD\u724C\u6CA1\u6709\u4E86",
+    occupied: "\u8FD9\u4E2A\u683C\u5B50\u5DF2\u7ECF\u6709\u724C",
+    locked: "\u8F66\u5DF2\u7ECF\u5728\u8D70\uFF0C\u724C\u4E0D\u80FD\u62FF\u8D77\u6765",
+    departed: "\u8FD9\u73ED\u5DF2\u7ECF\u5F00\u4E86",
+    slot: "\u8FD9\u91CC\u4E0D\u80FD\u653E",
+    lane: "\u8FD9\u6761\u8F68\u9053\u6CA1\u6709",
+    late: "\u5B83\u5DF2\u7ECF\u8D70\u8FC7\u8FD9\u4E00\u683C\u4E86"
+  };
+  var screens = {
+    title: document.querySelector("#screen-title"),
+    select: document.querySelector("#screen-select"),
+    play: document.querySelector("#screen-play")
+  };
+  var board = document.querySelector("#board");
+  var palette = document.querySelector("#palette");
+  var roster = document.querySelector("#roster");
+  var modal = document.querySelector("#modal");
+  var toast = document.querySelector("#toast");
+  var levelList = document.querySelector("#level-list");
+  var startButton = document.querySelector("#btn-start");
+  var mode = "title";
+  var run = null;
+  var selected = null;
+  var history = [];
+  var settled = false;
+  var briefing = false;
+  var toastUntil = 0;
+  var lastTs = 0;
+  var params = new URLSearchParams(location.search);
+  var debug = params.has("debug");
+  function show(next) {
+    mode = next;
+    for (const [name, el] of Object.entries(screens)) el.hidden = name !== next;
+    if (next !== "play") {
+      briefing = false;
+      document.querySelector("#brief").hidden = true;
+    }
+    if (next === "title") paintStart();
+    if (next === "select") renderSelect();
+  }
+  function targetNames(level) {
+    return level.features.filter((feature) => feature.target).map((feature) => feature.name);
+  }
+  function paintStart() {
+    const save = loadSave();
+    const level = LEVELS[Math.max(0, save.unlocked - 1)];
+    startButton.textContent = save.unlocked > 1 ? `\u7EE7\u7EED\u7B2C ${level.id} \u6B65 \xB7 ${level.name}` : "\u4ECE\u300C\u9700\u6C42\u300D\u5F00\u59CB";
+  }
+  function renderSelect() {
+    const save = loadSave();
+    levelList.innerHTML = "";
+    for (const level of LEVELS) {
+      const locked = level.id > save.unlocked;
+      const best = Number(save.best[level.id]) || 0;
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = `level-card${locked ? " locked" : ""}`;
+      card.disabled = locked;
+      const lv = document.createElement("span");
+      lv.className = "lv";
+      lv.textContent = `\u7B2C ${level.id} \u6B65${locked ? " \xB7 \u672A\u89E3\u9501" : ""}`;
+      const title = document.createElement("strong");
+      title.textContent = level.name;
+      const en = document.createElement("em");
+      en.textContent = `\u8981\u7559\u4E0B ${targetNames(level).join("\u3001")}`;
+      const meta = document.createElement("span");
+      meta.className = "meta";
+      meta.textContent = locked ? "\u5148\u62E6\u4F4F\u4E0A\u4E00\u6B65" : best ? `\u5DF2\u62E6\u4F4F \xB7 ${best} \u5206` : level.brief;
+      card.append(lv, title, en, meta);
+      card.addEventListener("click", () => startLevel(level.id));
+      levelList.appendChild(card);
+    }
+  }
+  function say(text) {
+    toast.hidden = false;
+    toast.textContent = text;
+    toastUntil = performance.now() + 1600;
+  }
+  function startLevel(id) {
+    run = createRun(id);
+    selected = run.inventory.find((item) => item.count > 0)?.id ?? null;
+    history = [];
+    settled = false;
+    briefing = true;
+    modal.hidden = true;
+    modal.innerHTML = "";
+    buildBoard();
+    buildPalette();
+    const targets = targetNames(run.level);
+    document.querySelector("#brief-kicker").textContent = `v2.0 \xB7 \u7B2C ${run.level.id} \u6B65`;
+    document.querySelector("#brief-title").textContent = run.level.name;
+    document.querySelector("#brief-text").textContent = run.level.brief;
+    document.querySelector("#brief-goal").textContent = `\u8FD9\u4E00\u6B65\u8981\u7559\u4E0B\uFF1A${targets.join("\u3001")}`;
+    document.querySelector("#brief").hidden = false;
+    show("play");
+    paint();
+  }
+  function buildBoard() {
+    board.innerHTML = "";
+    const trainRow = document.createElement("div");
+    trainRow.className = "train-row";
+    const label = document.createElement("div");
+    label.className = "train-label";
+    label.textContent = "v2.0 \xB7 \u5230\u70B9\u5C31\u5F00";
+    const rail = document.createElement("div");
+    rail.className = "train-rail";
+    const train = document.createElement("div");
+    train.id = "train";
+    train.className = "train";
+    for (const car of run.level.train) {
+      const span = document.createElement("span");
+      span.textContent = car;
+      train.appendChild(span);
+    }
+    rail.appendChild(train);
+    trainRow.append(label, rail);
+    board.appendChild(trainRow);
+    for (let lane = 0; lane < run.laneCount; lane += 1) {
+      const feature = run.features.find((item) => item.lane === lane);
+      const row = document.createElement("div");
+      row.className = `lane${feature?.target ? " target" : ""}`;
+      const name = document.createElement("div");
+      name.className = "fname";
+      const strong = document.createElement("strong");
+      strong.textContent = feature ? feature.name : `\u8F68\u9053 ${lane + 1}`;
+      const em = document.createElement("em");
+      em.textContent = feature?.target ? "\u522B\u4E0A\u8FD9\u73ED" : "\u53EF\u4EE5\u4E0A";
+      name.append(strong, em);
+      const track = document.createElement("div");
+      track.className = "rail";
+      track.style.gridTemplateColumns = `repeat(${run.level.slots + 1}, minmax(0, 1fr))`;
+      for (let slot = 0; slot < run.level.slots; slot += 1) {
+        const cell = document.createElement("button");
+        cell.type = "button";
+        cell.className = "cell";
+        cell.dataset.lane = String(lane);
+        cell.dataset.slot = String(slot);
+        cell.addEventListener("click", () => onCell(lane, slot));
+        track.appendChild(cell);
+      }
+      const station = document.createElement("div");
+      station.className = "station";
+      station.textContent = "\u4E0A\u7EBF\u7AD9";
+      track.appendChild(station);
+      if (feature) {
+        const token = document.createElement("div");
+        token.className = `token${feature.target ? " is-target" : ""}`;
+        token.dataset.feature = feature.id;
+        token.textContent = feature.target ? `${feature.name} \xB7 \u522B\u4E0A\u8FD9\u73ED` : `${feature.name} \xB7 \u53EF\u4EE5\u4E0A`;
+        track.appendChild(token);
+      }
+      row.append(name, track);
+      board.appendChild(row);
+    }
+  }
+  function buildPalette() {
+    palette.innerHTML = "";
+    run.inventory.forEach((item, index) => {
+      const gate = GATES[item.id];
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "gate";
+      button.dataset.gate = item.id;
+      const title = document.createElement("b");
+      title.textContent = `${index + 1}. ${gate.name}`;
+      const detail = document.createElement("small");
+      detail.textContent = gate.detail;
+      const count = document.createElement("em");
+      count.dataset.count = item.id;
+      button.append(title, detail, count);
+      button.addEventListener("click", () => {
+        selected = item.id;
+        paint();
+      });
+      palette.appendChild(button);
+    });
+  }
+  function onCell(lane, slot) {
+    if (!run || run.phase === "departed") return;
+    const occupied = run.obstacles.some((item) => item.lane === lane && item.slot === slot);
+    if (occupied) {
+      const result2 = remove(run, lane, slot);
+      if (!result2.ok) say(REASONS[result2.reason] || "\u4E0D\u80FD\u62FF\u8D77");
+      else history = history.filter((item) => !(item.lane === lane && item.slot === slot));
+      paint();
+      return;
+    }
+    if (!selected) {
+      say("\u5148\u70B9\u4E00\u5F20\u6D41\u7A0B\u724C");
+      return;
+    }
+    const result = place(run, selected, lane, slot);
+    if (!result.ok) say(REASONS[result.reason] || "\u653E\u4E0D\u4E0B\u53BB");
+    else history.push({ lane, slot });
+    paint();
+  }
+  function undo() {
+    if (!run || run.phase !== "setup") {
+      say("\u53EA\u6709\u5E03\u7F6E\u7A97\u53E3\u80FD\u64A4\u56DE");
+      return;
+    }
+    const last = history.pop();
+    if (!last) return;
+    remove(run, last.lane, last.slot);
+    paint();
+  }
+  function featureStatus(feature) {
+    if (feature.result === "boarded") return feature.target ? "\u4E0A\u8F66\u4E86" : "\u4E0A\u8F66\u4E86";
+    if (feature.result === "missed") return "\u6CA1\u8D76\u4E0A";
+    if (feature.platform) return "\u5DF2\u5728\u6708\u53F0";
+    if (feature.blocked) return `\u88AB${feature.blocked}\u62D6\u4F4F`;
+    return "\u8FD8\u5728\u8DEF\u4E0A";
+  }
+  function paint() {
+    if (!run) return;
+    const level = run.level;
+    document.querySelector("#lv-kicker").textContent = `v2.0 \xB7 \u7B2C ${level.id} \u6B65`;
+    document.querySelector("#lv-name").textContent = level.name;
+    document.querySelector("#mission").textContent = `\u8981\u7559\u4E0B\uFF1A${targetNames(level).join("\u3001")}`;
+    document.querySelector("#lv-blurb").textContent = level.brief;
+    document.querySelector("#hint").textContent = level.hint;
+    const sec = Math.max(0, run.departIn);
+    const clock = document.querySelector("#clock");
+    clock.textContent = sec < 10 ? sec.toFixed(1) : String(Math.ceil(sec));
+    document.querySelector("#clock-wrap").classList.toggle("urgent", sec < 5 && run.phase !== "departed");
+    document.querySelector("#phase-label").textContent = briefing ? "\u5148\u770B\u8981\u7559\u4E0B\u8C01" : run.phase === "setup" ? `\u5E03\u7F6E\u7A97\u53E3 ${Math.ceil(run.setupLeft)} \u79D2\uFF0C\u724C\u8FD8\u80FD\u62FF\u8D77` : run.phase === "running" ? "\u8F66\u5728\u8D70\u3002\u7A7A\u4F4D\u8FD8\u80FD\u8865\u724C\uFF0C\u4E0D\u80FD\u518D\u62FF\u8D77" : "\u5DF2\u51C6\u70B9\u53D1\u8F66";
+    document.querySelector("#budget").textContent = String(budgetLeft(run));
+    const spent = level.inventory.reduce((sum, item) => sum + item.count, 0) - budgetLeft(run);
+    document.querySelector("#used-label").textContent = `\u5DF2\u653E ${spent} \u5F20`;
+    const train = document.querySelector("#train");
+    if (train) {
+      const progress = 1 - run.departIn / run.total;
+      train.style.left = `${Math.max(0, Math.min(0.72, progress * 0.72)) * 100}%`;
+      train.classList.toggle("gone", run.phase === "departed");
+    }
+    for (const cell of board.querySelectorAll(".cell")) {
+      const lane = Number(cell.dataset.lane);
+      const slot = Number(cell.dataset.slot);
+      const obstacle = run.obstacles.find((item) => item.lane === lane && item.slot === slot);
+      const feature = run.features.find((item) => item.lane === lane);
+      const passed = feature && run.phase !== "setup" && feature.x >= (slot + 1) * run.slotW - 0.05;
+      cell.className = "cell";
+      if (obstacle) {
+        const gate = GATES[obstacle.gate];
+        cell.classList.add("filled", gate.effect);
+        cell.textContent = gate.name;
+      } else {
+        cell.textContent = passed ? "\u8D70\u8FC7\u4E86" : "";
+      }
+      if (passed && !obstacle) cell.classList.add("passed");
+      const who = feature ? feature.name : `\u8F68\u9053${lane + 1}`;
+      cell.setAttribute("aria-label", `${who} \u7B2C ${slot + 1} \u683C`);
+    }
+    for (const token of board.querySelectorAll(".token")) {
+      const feature = run.features.find((item) => item.id === token.dataset.feature);
+      if (!feature) continue;
+      token.style.left = `calc(${feature.x}% + 6px)`;
+    }
+    roster.innerHTML = "";
+    for (const feature of run.features) {
+      const li = document.createElement("li");
+      const status = featureStatus(feature);
+      li.textContent = `${feature.name} \xB7 ${feature.target ? "\u522B\u4E0A\u8FD9\u73ED" : "\u53EF\u4EE5\u4E0A"} \xB7 ${status}`;
+      if (feature.result === "missed" || feature.blocked && feature.target) li.className = "good";
+      else if (feature.result === "boarded" && feature.target) li.className = "bad";
+      else if (feature.platform && feature.target) li.className = "wait";
+      roster.appendChild(li);
+    }
+    for (const button of palette.querySelectorAll(".gate")) {
+      const item = run.inventory.find((entry) => entry.id === button.dataset.gate);
+      button.classList.toggle("on", selected === button.dataset.gate);
+      button.disabled = !item || item.count <= 0;
+      const count = button.querySelector("em");
+      count.textContent = item ? `\u8FD8\u5269 ${item.count}` : "";
+    }
+    if (toastUntil && performance.now() > toastUntil) toast.hidden = true;
+    if (run.phase === "departed") finish();
+  }
+  function resultLine(state) {
+    const boarded = state.features.filter((feature) => feature.result === "boarded").map((feature) => feature.name);
+    const missed = state.features.filter((feature) => feature.result === "missed").map((feature) => feature.name);
+    const parts = [];
+    if (missed.length) parts.push(`${missed.join("\u3001")}\u6CA1\u8D76\u4E0A`);
+    if (boarded.length) parts.push(`${boarded.join("\u3001")}\u4E0A\u8F66\u4E86`);
+    parts.push("\u8FD9\u73ED\u51C6\u70B9\u5F00\u4E86");
+    parts.push(state.win ? "\u4F60\u62E6\u4F4F\u4E86" : "\u6CA1\u62E6\u4F4F");
+    return `${parts.join("\u3002")}\u3002`;
+  }
+  function finish() {
+    if (settled) return;
+    settled = true;
+    if (run.win) writeSave(applyClear(loadSave(), run.level.id, run.score));
+    const last = run.level.id >= LEVELS.length;
+    modal.hidden = false;
+    modal.dataset.result = run.win ? "win" : "lose";
+    const card = document.createElement("div");
+    card.className = `modal-card${run.win ? " win" : ""}`;
+    const kicker = document.createElement("p");
+    kicker.className = "eyebrow";
+    kicker.textContent = `v2.0 \xB7 ${run.level.name}`;
+    const title = document.createElement("h3");
+    title.textContent = run.win ? last ? "\u62E6\u4F4F\u4E86\uFF0C\u8F66\u4E5F\u5F00\u8D70\u4E86" : "\u62E6\u4F4F\u4E86" : "\u6CA1\u62E6\u4F4F";
+    const body = document.createElement("p");
+    body.className = "result-line";
+    body.textContent = resultLine(run);
+    const score = document.createElement("p");
+    score.textContent = run.win ? `\u5206\u6570 ${run.score}\u3002\u8D8A\u65E9\u62E6\u4F4F\uFF0C\u5206\u8D8A\u9AD8\u3002` : "\u8F66\u8FD8\u662F\u51C6\u70B9\u5F00\u4E86\u3002\u518D\u5E03\u7F6E\u4E00\u6B21\u3002";
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    if (run.win && !last) {
+      const next = document.createElement("button");
+      next.type = "button";
+      next.className = "primary";
+      next.dataset.act = "next";
+      next.textContent = "\u4E0B\u4E00\u6B65";
+      actions.appendChild(next);
+    }
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.dataset.act = "retry";
+    retry.textContent = "\u518D\u5E03\u7F6E\u4E00\u6B21";
+    const back = document.createElement("button");
+    back.type = "button";
+    back.dataset.act = "select";
+    back.textContent = "\u770B\u8FD9\u4E94\u6B65";
+    actions.append(retry, back);
+    card.append(kicker, title, body, score, actions);
+    modal.innerHTML = "";
+    modal.appendChild(card);
+  }
+  function frame(ts) {
+    const dt = Math.min(0.05, lastTs ? (ts - lastTs) / 1e3 : 1 / 60);
+    lastTs = ts;
+    if (mode === "play" && run && !briefing && run.phase !== "departed") step(run, dt);
+    if (mode === "play" && run) paint();
+    requestAnimationFrame(frame);
+  }
+  document.querySelector("#btn-brief").addEventListener("click", () => {
+    briefing = false;
+    document.querySelector("#brief").hidden = true;
+    paint();
+  });
+  document.querySelector("#btn-start").addEventListener("click", () => startLevel(loadSave().unlocked || 1));
+  document.querySelector("#btn-levels").addEventListener("click", () => show("select"));
+  document.querySelector("#btn-select-back").addEventListener("click", () => show("title"));
+  document.querySelector("#btn-giveup").addEventListener("click", () => show("select"));
+  document.querySelector("#btn-reset").addEventListener("click", () => {
+    if (!window.confirm("\u6E05\u7A7A\u8FD9\u53F0\u8BBE\u5907\u4E0A\u7684\u73ED\u6B21\u8FDB\u5EA6\uFF1F")) return;
+    writeSave(emptySave());
+    renderSelect();
+  });
+  modal.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button || !run) return;
+    if (button.dataset.act === "retry") startLevel(run.level.id);
+    else if (button.dataset.act === "next") startLevel(Math.min(LEVELS.length, run.level.id + 1));
+    else if (button.dataset.act === "select") show("select");
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.code === "Enter" && mode === "title") startLevel(loadSave().unlocked || 1);
+    if (mode !== "play" || !run) return;
+    if (event.code === "KeyZ") undo();
+    const num = Number(event.key);
+    if (num >= 1 && num <= run.inventory.length) {
+      selected = run.inventory[num - 1].id;
+      paint();
+    }
+  });
+  paintStart();
+  requestAnimationFrame(frame);
+  if (debug) {
+    window.__train = {
+      get run() {
+        return run;
+      },
+      startLevel,
+      loadSave
+    };
+  }
+})();
+
+</script>
+  </body>
+</html>
