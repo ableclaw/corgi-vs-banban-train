@@ -99,4 +99,9 @@ js/engine.js         摆牌、需求走动、准点发车
 js/save.js           本机进度
 js/main.js           点击、触屏、键盘
 test/playability.js  可通关测试
+next-train/          《下一班火车》，另一条分支上的文本卡牌，不替换上面的游戏
 ```
+
+## 《下一班火车》
+
+这条是另一款小演示，不替换「准点发车」。玩法、本地运行和公开地址写在 [next-train/README.md](next-train/README.md)。
