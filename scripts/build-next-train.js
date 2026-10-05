@@ -4,7 +4,7 @@ const engine = fs.readFileSync("next-train/engine.js", "utf8")
   .replace(/^export /gm, "")
   .replace(/<\/script/gi, "<\\/script");
 const ui = fs.readFileSync("next-train/ui.js", "utf8")
-  .replace(/import \{[^}]+\} from "\.\/engine\.js";\n/, "")
+  .replace(/import \{[\s\S]*?\} from "\.\/engine\.js";\n/, "")
   .replace(/<\/script/gi, "<\\/script");
 const css = fs.readFileSync("next-train/style.css", "utf8").replace(/<\/style/gi, "<\\/style");
 let html = fs.readFileSync("next-train/index.html", "utf8");

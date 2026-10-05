@@ -9,6 +9,6 @@
     "dev": "node scripts/serve.js",
     "build": "node scripts/build.js",
     "build:next": "node scripts/build-next-train.js",
-    "test": "node test/playability.js && node next-train/test.js"
+    "test": "node test/playability.js && node next-train/test.js && node next-train/sim.js"
   }
 }
