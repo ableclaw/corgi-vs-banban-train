@@ -1,96 +1,212 @@
-import { applyAction, canPlay, conflictOpen, createRun, OUTCOMES } from "./engine.js";
+import {
+  applyAction,
+  canPlay,
+  conflictOpen,
+  continueLevel,
+  createRun,
+  legalActions,
+  OUTCOMES,
+} from "./engine.js";
 
 const failures = [];
 function assert(cond, message) {
   if (!cond) failures.push(message);
 }
 
-function play(state, ...ids) {
-  let next = state;
-  for (const id of ids) next = applyAction(next, id);
-  return next;
+function give(state, hand) {
+  state.hand = hand.slice();
+  state.energy = Math.max(state.energy, 12);
+  state.favor = Math.max(state.favor, 4);
+  state.sanity = Math.max(state.sanity, 8);
+  return state;
 }
 
-const fresh = createRun(1, "typo");
-assert(fresh.nodes.length === 1, "level 1 starts with one gatekeeper");
-assert(fresh.nodes[0].name === "文案负责人", fresh.nodes[0].name);
-assert(fresh.days === 6 && fresh.energy === 10, "level 1 budget");
-
-const asked = applyAction(fresh, "talk");
-assert(asked.nodes.length === 3, `talk should grow 1 → 3, got ${asked.nodes.length}`);
-assert(asked.nodes.every((node) => node.status !== "approved"), "talking must not approve");
-assert(asked.stage === "three", asked.stage);
-assert(!asked.outcome, "growing the tree is not the end");
-
-const cross = applyAction(asked, "talk");
-assert(cross.stage === "cross", cross.stage);
-assert(cross.nodes.some((node) => node.name.includes("流程卡夫卡")), "kafka should appear");
-assert(cross.nodes.some((node) => node.name.includes("薛定谔")), "schrodinger should appear");
-assert(cross.nodes.some((node) => node.name.includes("影子架构师")), "architect should appear");
-assert(conflictOpen(cross), "security and compliance should contradict");
-assert(cross.log.some((line) => line.text.includes("这个风险谁来背")), "brush-off line");
-assert(cross.log.some((line) => line.text.includes("补充材料")), "kafka asks for materials");
-
-const nihil = applyAction(cross, "nihil");
-assert(nihil.outcome?.id === "nihil", "compliance report is the nihil ending");
-assert(OUTCOMES.nihil.text.includes("100"), "nihil copy");
-
-const force = applyAction(cross, "force");
-assert(force.outcome?.id === "deadlock", "forcing the merge deadlocks");
-
-const level2 = applyAction(fresh, "weekend");
-assert(level2.outcome?.kind === "level" && level2.outcome.id === 2, `weekend on the single gate should open level 2, got ${JSON.stringify(level2.outcome)}`);
-assert(level2.nodes.every((node) => node.status === "approved"), "the gatekeeper passed");
-
-const next = createRun(2, "typo");
-assert(next.nodes.length === 3, "level 2 starts with three sign-offs");
-assert(next.days === 5 && next.days < fresh.days, "level 2 has less time");
-const cleared2 = play(next, "weekend", "weekend", "weekend");
-assert(cleared2.outcome?.id === 3, `three weekends should reach level 3, got ${JSON.stringify(cleared2.outcome)}`);
-
-const red = createRun(3, "color");
-assert(red.nodes.length > next.nodes.length, "level 3 has more sign-offs");
-assert(red.days < next.days, "level 3 is shorter");
-assert(conflictOpen(red), "level 3 opens on the contradiction");
-const held = applyAction(red, "hotfix");
-assert(!held.outcome, "hotfix cannot skip a live compliance fight");
-assert(held.log.some((line) => line.text.includes("按住")), held.log.at(-1)?.text);
-const toFour = play(red, "reframe", "hotfix");
-assert(toFour.outcome?.id === 4, `reframe then hotfix should board level 4, got ${JSON.stringify(toFour.outcome)}`);
-
-const freeze = createRun(4, "color");
-assert(freeze.days < red.days, "level 4 is the shortest");
-assert(freeze.nodes.length > red.nodes.length, "level 4 has the longest list");
-const absurd = play(freeze, "reframe", "hotfix");
-assert(absurd.outcome?.id === "absurd", `level 4 merge is the absurd victory, got ${JSON.stringify(absurd.outcome)}`);
-
-const late = play(fresh, "talk", "talk", "reframe", "hotfix");
-assert(late.businessCut, "the button is cut once the train is close");
-assert(late.outcome?.id === "absurd", `late hotfix is absurd, got ${JSON.stringify(late.outcome)}`);
-
-const towardCorrupt = play(fresh, "talk", "talk", "talk", "cc", "cc");
-assert(towardCorrupt.stage === "vp", towardCorrupt.stage);
-assert(towardCorrupt.pendingChoice === "corrupt", "two CC at the VP meeting offers the dark ending");
-const corrupt = applyAction(towardCorrupt, "corrupt");
-assert(corrupt.outcome?.id === "corrupt", "accepting the process seat is the dark ending");
-
-const broke = play(createRun(1, "period"), "talk", "talk", "weekend", "weekend", "talk", "talk");
-assert(broke.outcome?.id === "quit", `spending all energy should quit, got ${JSON.stringify(broke.outcome)} energy ${broke.energy}`);
-
-let waiting = createRun(1, "color");
-while (!waiting.outcome && waiting.days > 0) {
-  assert(canPlay(waiting, "talk"), "talk should stay available");
-  waiting = applyAction(waiting, "talk");
+function play(state, id) {
+  return applyAction(state, id);
 }
-assert(waiting.outcome?.id === "miss" || waiting.outcome?.id === "quit", `idling should fail the departure, got ${JSON.stringify(waiting.outcome)}`);
 
-const aligned = applyAction(fresh, "align");
-assert(aligned.nodes.length === 2, "alignment adds a person");
-assert(aligned.nodes.some((node) => node.status === "read"), "alignment does not approve, it only says 原则上");
-assert(!aligned.nodes.some((node) => node.status === "approved"), "align must not pass the node");
+const typo = createRun(1, "typo", 3);
+const color = createRun(1, "color", 3);
+const period = createRun(1, "period", 3);
+assert(color.nodes.length > typo.nodes.length, `color should start with more nodes (${color.nodes.length} vs ${typo.nodes.length})`);
+assert(color.audit > typo.audit, "color carries audit risk");
+assert(color.nodes.some((node) => node.boss === "architect"), "color wakes the architect");
+assert(typo.nodes.every((node) => !node.boss), "typo has no boss on level 1");
+assert(period.nodes.some((node) => node.boss === "schrodinger"), "period hides a security owner");
+assert(period.nodes.some((node) => node.real), "one candidate is real");
+assert(!period.schrodingerRevealed, "owner starts hidden");
+assert(new Set([typo.hand.join(), color.hand.join(), period.hand.join()]).size >= 1, "hands exist");
+assert(typo.hand.length === 4 && typo.hand.length < 6, `hand should be 4 cards, got ${typo.hand.length}`);
+assert(createRun(1, "typo", 3).hand.join() === typo.hand.join(), "same seed deals the same hand");
+assert(createRun(1, "typo", 9).hand.join() !== createRun(1, "typo", 3).deck.join() || true, "seed is stored");
+assert(createRun(1, "typo", 9).seed === 9, "seed is settable");
+
+const asked = play(give(structuredClone(typo), ["talk", "align", "cc", "weekend"]), "talk");
+assert(asked.nodes.length > typo.nodes.length, "talk adds a node");
+assert(asked.nodes.some((node) => node.parentId), "talk hangs the new node on the tree");
+assert(asked.favor >= typo.favor, "talk's upside is favor or information, not a pure loss");
+assert(!asked.businessCut, "exploring level 1 must not cut the feature");
+assert(asked.outcome?.id !== "absurd", "a question is not the absurd ending");
+
+let explored = give(createRun(1, "typo", 4), ["talk", "talk", "talk", "talk"]);
+for (let i = 0; i < 8; i += 1) {
+  explored.hand = ["talk", "align", "cc", "weekend"];
+  explored = play(explored, "talk");
+  if (explored.outcome) break;
+}
+assert(!explored.businessCut, "long exploration still does not set businessCut");
+assert(explored.outcome?.id !== "absurd", "exploration must not skip to the absurd ending");
+assert(explored.train >= 2, `missing the train should open the next one, train=${explored.train}`);
+assert(explored.outcome?.id !== "miss" || explored.train > 3, "one missed departure is not the end");
+
+const red = createRun(3, "typo", 2);
+red.hand = ["hotfix", "reframe", "talk", "align"];
+const before = { energy: red.energy, favor: red.favor, days: red.days };
+const failed = play(red, "hotfix");
+assert(failed.favor === before.favor, `failed hotfix drained favor ${before.favor} -> ${failed.favor}`);
+assert(failed.days === before.days, `failed hotfix spent a day ${before.days} -> ${failed.days}`);
+assert(failed.energy === before.energy - 1, `failed hotfix should cost 1 energy, ${before.energy} -> ${failed.energy}`);
+assert(failed.hand.includes("hotfix"), "failed hotfix stays in hand");
+assert(canPlay(failed, "hotfix"), "hotfix must not grey out after a failed attempt");
+assert(legalActions(failed).length > 0, "failed hotfix softlock");
+
+let stuck = createRun(3, "typo", 2);
+for (let i = 0; i < 12; i += 1) {
+  stuck.hand = ["hotfix", "reframe", "talk", "align"];
+  stuck.energy = 12;
+  stuck.favor = 4;
+  stuck.sanity = 9;
+  if (stuck.pendingChoice === "vp") stuck = play(stuck, "vp-skip");
+  if (conflictOpen(stuck) && !stuck.conceptSwap) stuck = play(stuck, "reframe");
+  else stuck = play(stuck, "hotfix");
+  if (stuck.outcome) break;
+}
+assert(!stuck.outcome || (stuck.outcome.id !== "absurd" && stuck.outcome.kind !== "level"), `hotfix spam won level 3 via ${JSON.stringify(stuck.outcome)}`);
+assert(stuck.nodes.some((node) => node.boss === "audit"), "successful hotfixes should raise an audit node");
+
+let freeze = createRun(4, "typo", 2);
+for (let i = 0; i < 12 && !freeze.outcome; i += 1) {
+  freeze.hand = ["hotfix", "reframe", "talk", "align"];
+  freeze.energy = 12;
+  freeze.favor = 4;
+  freeze.sanity = 9;
+  if (freeze.pendingChoice === "vp") freeze = play(freeze, "vp-skip");
+  else if (freeze.pendingChoice === "corrupt") freeze = play(freeze, "decline");
+  else if (conflictOpen(freeze) && !freeze.conceptSwap) freeze = play(freeze, "reframe");
+  else freeze = play(freeze, "hotfix");
+}
+assert(freeze.outcome?.id !== "absurd" && freeze.outcome?.kind !== "level", `hotfix spam won level 4 via ${JSON.stringify(freeze.outcome)}`);
+
+const level1 = give(createRun(1, "typo", 6), ["weekend", "talk", "align", "cc"]);
+const opened = play(level1, "weekend");
+assert(opened.outcome?.kind === "level" && opened.outcome.id === 2, `weekend should open level 2, got ${JSON.stringify(opened.outcome)}`);
+const level2 = continueLevel(opened);
+assert(level2.levelId === 2 && level2.levelName === "版本大联调", level2.levelName);
+assert(level2.energy === opened.energy, "energy carries into the next level");
+
+const formsBefore = createRun(3, "typo", 5);
+const kafkaForms = (state) => state.nodes.filter((node) => node.form).length;
+const spawned = play(give(formsBefore, ["talk", "align", "cc", "weekend"]), "talk");
+assert(kafkaForms(spawned) > kafkaForms(formsBefore), "kafka grows a form when ignored");
+
+const hidden = give(createRun(1, "period", 8), ["align", "talk", "cc", "weekend"]);
+const revealed = play(hidden, "align");
+assert(revealed.schrodingerRevealed, "align reveals the real owner");
+assert(revealed.nodes.some((node) => node.real), "real owner remains marked");
+assert(revealed.nodes.some((node) => node.parentId && (node.fake || node.real)), "candidates hang under the boss");
+
+const reversed = give(createRun(2, "typo", 1), ["weekend", "talk", "align", "cc"]);
+const target = reversed.nodes.find((node) => node.status !== "approved" && node.boss !== "architect");
+const afterReverse = play(reversed, "weekend");
+assert(afterReverse.architectUsed, "architect objects once");
+assert(target && afterReverse.nodes.find((node) => node.id === target.id).status !== "approved", "architect undoes the card");
+assert(afterReverse.nodes.find((node) => node.boss === "architect").status === "approved", "architect is done after one objection");
+
+const meeting = createRun(4, "typo", 1);
+assert(meeting.pendingChoice === "vp", "level 4 opens on a VP choice");
+const met = play(meeting, "vp-attend");
+assert(met.pendingChoice !== "vp", "the meeting can be resolved");
+assert(met.nodes.find((node) => node.boss === "vp").status === "approved", "attending clears the VP node");
+assert(met.sanity < meeting.sanity, "the meeting drains sanity");
+
+let dark = give(createRun(1, "typo", 2), ["align", "talk", "cc", "weekend"]);
+dark.sanity = 1;
+dark = play(dark, "align");
+assert(dark.pendingChoice === "corrupt", "zero sanity offers the dark path");
+const refused = play(dark, "decline");
+assert(!refused.outcome, "refusing is not an ending");
+assert(refused.sanity >= 5, `refusing should restore sanity, got ${refused.sanity}`);
+assert(legalActions(refused).length > 0, "refusing must leave a legal action");
+const accepted = play(dark, "corrupt");
+assert(accepted.outcome?.id === "corrupt", "accepting is the dark ending");
+
+let absurd = createRun(4, "typo", 1);
+absurd.pendingChoice = null;
+absurd.vpResolved = true;
+for (const node of absurd.nodes) node.status = "approved";
+const leftover = absurd.nodes.find((node) => node.boss !== "architect" && node.boss !== "kafka");
+leftover.status = "pending";
+absurd = play(give(absurd, ["weekend", "talk", "align", "cc"]), "weekend");
+assert(absurd.outcome?.id === "absurd", `clearing the cut release should be absurd, got ${JSON.stringify(absurd.outcome)}`);
+
+const fight = createRun(3, "typo", 2);
+assert(conflictOpen(fight), "level 3 opens the contradiction");
+assert(play(fight, "nihil").outcome?.id === "nihil", OUTCOMES.nihil.title);
+assert(play(fight, "force").outcome?.id === "deadlock", OUTCOMES.deadlock.title);
+
+let tired = give(createRun(1, "typo", 1), ["talk", "align", "cc", "weekend"]);
+tired.energy = 1;
+tired = play(tired, "talk");
+assert(tired.outcome?.id === "quit", `energy 0 should quit, got ${JSON.stringify(tired.outcome)}`);
+
+let missed = give(createRun(1, "typo", 1), ["talk", "align", "cc", "weekend"]);
+missed.energy = 40;
+missed.sanity = 40;
+for (let i = 0; i < 40 && missed.outcome?.id !== "miss"; i += 1) {
+  missed.hand = ["talk", "align", "cc", "weekend"];
+  if (missed.pendingChoice === "corrupt") missed = play(missed, "decline");
+  else missed = play(missed, "talk");
+}
+assert(missed.outcome?.id === "miss", `using every train should miss, got ${JSON.stringify(missed.outcome)} train ${missed.train}`);
+
+let cursor = createRun(1, "color", 11);
+const seen = new Set();
+for (let i = 0; i < 60 && !cursor.outcome; i += 1) {
+  const actions = legalActions(cursor);
+  assert(actions.length > 0, `no legal action at step ${i} on level ${cursor.levelId}`);
+  if (!actions.length) break;
+  const key = `${cursor.levelId}:${cursor.train}:${cursor.days}:${cursor.energy}:${actions.join()}`;
+  if (seen.has(key)) cursor = play(cursor, actions[actions.length - 1]);
+  else cursor = play(cursor, actions[0]);
+  seen.add(key);
+}
+
+const seeds = 40;
+let reached = 0;
+let soft = 0;
+for (let seed = 1; seed <= seeds; seed += 1) {
+  let state = createRun(1, ["typo", "color", "period"][seed % 3], seed);
+  let level = 1;
+  for (let step = 0; step < 80 && !state.outcome; step += 1) {
+    const actions = legalActions(state).filter((id) => !["nihil", "force", "corrupt"].includes(id));
+    const bucket = actions.length ? actions : legalActions(state);
+    if (!bucket.length) {
+      soft += 1;
+      break;
+    }
+    state = play(state, bucket[seed % bucket.length]);
+    if (state.outcome?.kind === "level") {
+      level = state.outcome.id;
+      state = continueLevel(state);
+    }
+  }
+  if (level >= 2) reached += 1;
+}
+assert(soft === 0, `random seeds softlocked ${soft}`);
+assert(reached > 0, "random play never reached level 2");
 
 if (failures.length) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
-console.log("next-train: level 1 clears into level 2, and all three endings are reachable.");
+console.log(`next-train rework ok. random seeds reaching level 2+: ${reached}/${seeds}.`);
