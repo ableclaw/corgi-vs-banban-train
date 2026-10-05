@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url";
 import { applyAction, conflictOpen, continueLevel, createRun, legalActions } from "./engine.js";
 
 function rng(seed) {
@@ -11,7 +12,7 @@ function rng(seed) {
   };
 }
 
-function campaign(pick, change, r) {
+export function campaign(pick, change, r) {
   let level = 1;
   let state = createRun(1, change, 1 + Math.floor(r() * 100000));
   let actions = 0;
@@ -39,19 +40,24 @@ function campaign(pick, change, r) {
   }
 }
 
-const strategies = {
+export const strategies = {
   hotfixSpam: (state, options) => {
     if (options.includes("decline")) return "decline";
     if (options.includes("vp-skip")) return "vp-skip";
     if (conflictOpen(state) && !state.conceptSwap && options.includes("reframe")) return "reframe";
     if (options.includes("hotfix")) return "hotfix";
     if (options.includes("reframe")) return "reframe";
+    if (options.includes("rest")) return "rest";
     if (options.includes("talk")) return "talk";
-    return options.find((id) => !["nihil", "force", "corrupt"].includes(id)) || options[0];
+    return options.find((id) => ["vp-delegate", "rest", "reframe", "talk"].includes(id))
+      || options.find((id) => id === "nihil")
+      || options[0];
   },
   hotfixOnly: (state, options) => options.includes("hotfix")
     ? "hotfix"
-    : options.find((id) => !["nihil", "force", "corrupt"].includes(id)) || options[0],
+    : options.find((id) => ["reframe", "rest", "talk", "vp-skip", "decline"].includes(id))
+      || options.find((id) => id === "nihil")
+      || options[0],
   random: (state, options, roll) => options[Math.floor(roll() * options.length)],
   randomCardsOnly: (state, options, roll) => {
     const cards = options.filter((id) => !["nihil", "force", "corrupt"].includes(id));
@@ -59,18 +65,43 @@ const strategies = {
     return pool[Math.floor(roll() * pool.length)];
   },
   good: (state, options) => {
-    if (options.includes("vp-attend")) return "vp-attend";
     if (options.includes("decline")) return "decline";
-    if (state.nodes.some((node) => node.boss === "architect" && node.status !== "approved") && options.includes("talk")) return "talk";
-    if (options.includes("weekend")) return "weekend";
+    if (options.includes("vp-attend") && state.sanity > 3) return "vp-attend";
+    if (options.includes("vp-skip")) return "vp-skip";
+    const blocks = state.nodes.filter((node) => node.status !== "approved" && node.status !== "read" && !node.fake && !((node.boss === "schrodinger" || node.real) && !state.schrodingerRevealed)).length;
+    const kafka = state.nodes.some((node) => (node.boss === "kafka" || node.form) && node.status !== "approved");
+    if (kafka && options.includes("weekend")) return "weekend";
+    if (kafka && options.includes("cc")) return "cc";
+    const architect = state.nodes.some((node) => node.boss === "architect" && node.status !== "approved" && !state.architectUsed);
+    if (architect) {
+      const cheap = ["rest", "reframe", "talk"].find((id) => options.includes(id));
+      if (cheap) return cheap;
+    }
+    if (!state.schrodingerRevealed && state.nodes.some((node) => node.real) && options.includes("align")) return "align";
+    if (blocks > 0 && options.includes("weekend")) return "weekend";
+    if (blocks > 0 && state.sanity > 3 && options.includes("cc")) return "cc";
+    if (blocks >= 2 && options.includes("align")) return "align";
+    if (state.energy <= 4 && state.days > 1 && options.includes("rest")) return "rest";
+    if (conflictOpen(state) && !state.conceptSwap && options.includes("reframe")) return "reframe";
+    const hidden = state.nodes.some((node) => node.hidden && !node.revealed);
+    if (hidden && options.includes("talk")) return "talk";
+    return options.find((id) => !["nihil", "force", "corrupt", "hotfix", "talk"].includes(id))
+      || options.find((id) => !["nihil", "force", "corrupt", "hotfix"].includes(id))
+      || options[0];
+  },
+  report: (state, options) => (options.includes("nihil") ? "nihil" : strategies.good(state, options)),
+  burnout: (state, options) => {
+    if (options.includes("corrupt")) return "corrupt";
+    if (options.includes("vp-attend")) return "vp-attend";
     if (options.includes("cc")) return "cc";
     if (options.includes("align")) return "align";
-    if (options.includes("reframe") && conflictOpen(state) && !state.conceptSwap) return "reframe";
-    return options.find((id) => !["nihil", "force", "corrupt", "hotfix"].includes(id)) || options[0];
+    if (options.includes("talk")) return "talk";
+    return options.find((id) => !["decline", "rest", "nihil", "force", "weekend", "hotfix"].includes(id)) || options[0];
   },
   explore: (state, options) => (options.includes("talk") ? "talk" : options[0]),
 };
 
+function printReport() {
 for (const [name, pick] of Object.entries(strategies)) {
   const runs = name.startsWith("random") ? 200 : 12;
   const rows = [];
@@ -156,3 +187,6 @@ for (let i = 0; i < 200; i += 1) {
   }
 }
 console.log("absurd total", total, "reached before L4 (L1 businessCut skip)", early);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) printReport();

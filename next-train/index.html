@@ -2,66 +2,37 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>下一班火车</title>
-    <meta name="description" content="你是初级工程师。发车前，把一行改动送上版本火车。" />
+    <meta name="description" content="掌机里的审批战。把一行改动送上版本火车。" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header class="top">
-      <strong>《下一班火车》</strong>
-      <span>初级工程师 · 一行合并请求</span>
-    </header>
-    <main id="pick">
-      <p class="kicker">Open · 还没上车</p>
-      <h1>发车前，把一行改动送上去</h1>
-      <p class="lede">你是初级工程师。版本火车到点就开。你想把一行改动送上去。问人会多一个签字，但能问出东西。错过这班，审批清零，下一班还会来。</p>
-      <ul class="rules">
-        <li>每回合从牌堆摸 4 张。种子写在页面上，地址加 ?seed= 可以复现。</li>
-        <li>精力归零就辞职。理智归零会有人请你去管流程，你可以拒绝。</li>
-        <li>特批失败只掉一点精力。特批成功会抬高审计，审计那格特批盖不过。</li>
-        <li>安全要日志、合规不让记的时候，谁也签不了字。</li>
-      </ul>
-      <label class="seed-label">种子 <input id="seed-input" type="number" min="1" value="1" /></label>
-      <div class="picks" id="picks"></div>
-    </main>
-    <main id="play" hidden>
-      <section class="mr">
-        <p class="kicker" id="kicker"></p>
-        <h2 id="mr-title"></h2>
-        <div class="stats">
-          <span id="stat-level"></span>
-          <span id="stat-days"></span>
-          <span id="stat-energy"></span>
-          <span id="stat-sanity"></span>
-          <span id="stat-favor"></span>
-          <span id="stat-audit"></span>
-          <span id="stat-train"></span>
-          <span class="stage" id="stat-stage"></span>
+    <div id="console">
+      <div class="shell">
+        <div class="brand"><span class="led" id="led"></span> NEXT TRAIN <small>掌机</small></div>
+        <div class="well">
+          <canvas id="screen" width="320" height="240" tabindex="0" aria-label="下一班火车"></canvas>
         </div>
-        <pre class="diff" id="diff"></pre>
-      </section>
-      <section class="layout">
-        <div class="panel">
-          <h3>审批树</h3>
-          <p class="hint" id="tree-hint">子节点缩进在负责人下面。去问问会再挂一格，也能问出隐藏要求。</p>
-          <ul class="tree" id="tree"></ul>
+        <div class="pad">
+          <div class="dpad" aria-label="方向键">
+            <button type="button" data-key="up" aria-label="上">▲</button>
+            <button type="button" data-key="left" aria-label="左">◀</button>
+            <button type="button" data-key="down" aria-label="下">▼</button>
+            <button type="button" data-key="right" aria-label="右">▶</button>
+          </div>
+          <div class="center-keys">
+            <button type="button" data-key="select">SELECT</button>
+            <button type="button" data-key="start">START</button>
+          </div>
+          <div class="ab">
+            <button type="button" class="key-b" data-key="b" aria-label="B 返回">B</button>
+            <button type="button" class="key-a" data-key="a" aria-label="A 确认">A</button>
+          </div>
         </div>
-        <div class="panel">
-          <h3>讨论</h3>
-          <div class="feed" id="feed"></div>
-        </div>
-      </section>
-      <section id="conflict" class="conflict" hidden>
-        <p id="conflict-text"></p>
-        <div class="choices">
-          <button type="button" class="choice" id="btn-nihil">出一份 100 分合规报告</button>
-          <button type="button" class="choice" id="btn-force">这个风险我来背，强行合入</button>
-        </div>
-      </section>
-      <section class="cards" id="cards" aria-label="手牌"></section>
-    </main>
-    <div id="modal" class="modal" hidden></div>
+        <p class="key-hint">方向键选择 · A 确认 · B 返回 · Start 说明 · Select 静音</p>
+      </div>
+    </div>
     <script type="module" src="ui.js"></script>
   </body>
 </html>
