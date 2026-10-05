@@ -15,12 +15,14 @@
     <main id="pick">
       <p class="kicker">Open · 还没上车</p>
       <h1>发车前，把一行改动送上去</h1>
-      <p class="lede">你是初级工程师。版本火车到点就开。你想把一个很小的改动合进这班车，可是签字会自己长出来。</p>
+      <p class="lede">你是初级工程师。版本火车到点就开。你想把一行改动送上去。问人会多一个签字，但能问出东西。错过这班，审批清零，下一班还会来。</p>
       <ul class="rules">
-        <li>去问负责人，不会通过，只会多几个签字。</li>
-        <li>精力归零，你辞职。天数归零，这班不要你，审批清零。</li>
+        <li>每回合从牌堆摸 4 张。种子写在页面上，地址加 ?seed= 可以复现。</li>
+        <li>精力归零就辞职。理智归零会有人请你去管流程，你可以拒绝。</li>
+        <li>特批失败只掉一点精力。特批成功会抬高审计，审计那格特批盖不过。</li>
         <li>安全要日志、合规不让记的时候，谁也签不了字。</li>
       </ul>
+      <label class="seed-label">种子 <input id="seed-input" type="number" min="1" value="1" /></label>
       <div class="picks" id="picks"></div>
     </main>
     <main id="play" hidden>
@@ -31,7 +33,10 @@
           <span id="stat-level"></span>
           <span id="stat-days"></span>
           <span id="stat-energy"></span>
+          <span id="stat-sanity"></span>
           <span id="stat-favor"></span>
+          <span id="stat-audit"></span>
+          <span id="stat-train"></span>
           <span class="stage" id="stat-stage"></span>
         </div>
         <pre class="diff" id="diff"></pre>
@@ -39,7 +44,7 @@
       <section class="layout">
         <div class="panel">
           <h3>审批树</h3>
-          <p class="hint">找他们聊天不会变成「已通过」。树会往下长。</p>
+          <p class="hint" id="tree-hint">子节点缩进在负责人下面。去问问会再挂一格，也能问出隐藏要求。</p>
           <ul class="tree" id="tree"></ul>
         </div>
         <div class="panel">

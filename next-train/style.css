@@ -50,8 +50,11 @@ h1 { font-size: clamp(28px, 4vw, 40px); margin: 0 0 8px; }
 .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-height: 220px; }
 .panel h3 { margin: 0 0 8px; font-size: 16px; }
 .hint { color: var(--muted); font-size: 13px; margin: 0 0 8px; }
-.tree { list-style: none; margin: 0; padding: 0 0 0 8px; border-left: 2px solid var(--line); }
-.tree li { margin: 8px 0; padding-left: 10px; }
+.tree, .tree ul { list-style: none; margin: 0; padding: 0; }
+.tree ul { margin-left: 14px; padding-left: 12px; border-left: 2px solid #d8dee4; }
+.tree li { margin: 8px 0; }
+.seed-label { display: inline-flex; gap: 8px; align-items: center; margin-top: 8px; color: var(--muted); }
+.seed-label input { width: 88px; font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); }
 .tree .who { font-weight: 700; }
 .badge { display: inline-block; margin-left: 6px; font-size: 12px; border-radius: 999px; padding: 1px 8px; background: var(--bg); }
 .badge.pending { color: var(--muted); }
