@@ -2,154 +2,131 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>下一班火车</title>
-    <meta name="description" content="你是初级工程师。发车前，把一行改动送上版本火车。" />
+    <meta name="description" content="掌机里的审批战。把一行改动送上版本火车。" />
     <style>
-:root {
-  color-scheme: light;
-  --ink: #1f2328;
-  --muted: #656d76;
-  --line: #d0d7de;
-  --bg: #f6f8fa;
-  --paper: #fff;
-  --blue: #0969da;
-  --green: #1a7f37;
-  --red: #cf222e;
-  --amber: #9a6700;
-  --soft: #fff8c5;
-  font-family: "WenQuanYi Micro Hei", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+@font-face {
+  font-family: "PixelCN";
+  src: url("fonts/fusion-pixel-10px-zh_hans.woff2") format("woff2");
+  font-display: block;
 }
+:root { color-scheme: dark; }
 * { box-sizing: border-box; }
-[hidden] { display: none !important; }
-body { margin: 0; background: var(--bg); color: var(--ink); }
-button { font-family: inherit; cursor: pointer; }
-header.top {
-  display: flex; justify-content: space-between; gap: 12px; align-items: center;
-  padding: 14px 20px; background: var(--paper); border-bottom: 1px solid var(--line);
+html, body { margin: 0; height: 100%; background: #12141a; }
+body {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "PixelCN", "WenQuanYi Micro Hei", sans-serif;
 }
-header.top strong { font-size: 18px; }
-header.top span { color: var(--muted); }
-main { width: min(1080px, 100%); margin: 0 auto; padding: 20px 16px 40px; }
-h1 { font-size: clamp(28px, 4vw, 40px); margin: 0 0 8px; }
-.lede { font-size: 18px; line-height: 1.65; max-width: 40em; }
-.rules { color: var(--muted); line-height: 1.6; padding-left: 18px; }
-.picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 16px; }
-.pick, .card, .choice {
-  text-align: left; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
-  min-height: 48px;
+button { font-family: inherit; }
+#console { width: min(560px, 100%); }
+.shell {
+  background: linear-gradient(180deg, #3c4250 0%, #2a2e38 40%, #23262e 100%);
+  border: 4px solid #1a1c22;
+  border-radius: 28px 28px 36px 36px;
+  padding: 14px 16px 12px;
+  box-shadow: inset 0 2px 0 #6a7180, 0 16px 0 #0c0d11;
 }
-.pick { min-height: 92px; }
-.pick b, .card b { display: block; font-size: 16px; }
-.pick small, .card small, .card em { display: block; color: var(--muted); font-style: normal; margin-top: 4px; line-height: 1.4; }
-.pick:hover, .card:hover:not(:disabled) { border-color: var(--blue); }
-.mr { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
-.kicker { margin: 0; color: var(--green); font-weight: 700; font-size: 13px; }
-.mr h2 { margin: 4px 0; font-size: 22px; }
-.stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.stats span, .stage {
-  background: var(--bg); border-radius: 999px; padding: 4px 10px; font-size: 14px;
+.brand {
+  display: flex; align-items: center; gap: 8px;
+  color: #d7dbe6; letter-spacing: 2px; font-size: 14px; padding: 0 8px 8px;
 }
-.stats .hot { background: #ffebe9; color: var(--red); }
-.diff { background: #f6f8fa; border-radius: 8px; padding: 10px 12px; overflow: auto; line-height: 1.45; }
-.diff .add { color: var(--green); }
-.diff .del { color: var(--red); }
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
-.panel { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-height: 220px; }
-.panel h3 { margin: 0 0 8px; font-size: 16px; }
-.hint { color: var(--muted); font-size: 13px; margin: 0 0 8px; }
-.tree, .tree ul { list-style: none; margin: 0; padding: 0; }
-.tree ul { margin-left: 14px; padding-left: 12px; border-left: 2px solid #d8dee4; }
-.tree li { margin: 8px 0; }
-.seed-label { display: inline-flex; gap: 8px; align-items: center; margin-top: 8px; color: var(--muted); }
-.seed-label input { width: 88px; font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); }
-.tree .who { font-weight: 700; }
-.badge { display: inline-block; margin-left: 6px; font-size: 12px; border-radius: 999px; padding: 1px 8px; background: var(--bg); }
-.badge.pending { color: var(--muted); }
-.badge.read { background: var(--soft); color: var(--amber); }
-.badge.approved { background: #dafbe1; color: var(--green); }
-.badge.blocked { background: #ffebe9; color: var(--red); }
-.feed { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow: auto; }
-.comment { border-top: 1px solid var(--line); padding-top: 8px; }
-.comment b { display: block; }
-.comment p { margin: 4px 0 0; line-height: 1.5; }
-.conflict { margin-top: 12px; background: #fff8c5; border: 1px solid #d4a72c; border-radius: 12px; padding: 12px 14px; }
-.conflict p { margin: 0 0 8px; line-height: 1.5; }
-.choices, .cards { display: flex; flex-wrap: wrap; gap: 8px; }
-.cards { margin-top: 12px; }
-.card { flex: 1 1 200px; }
-.card:disabled { opacity: .45; cursor: not-allowed; }
-.card.on { outline: 2px solid var(--blue); }
-.modal {
-  position: fixed; inset: 0; background: rgba(31, 35, 40, .45);
-  display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 5;
+.brand small { margin-left: auto; letter-spacing: 0; color: #8b93a3; }
+.led {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #ff4d4d; box-shadow: 0 0 8px #ff4d4d;
 }
-.modal-card { width: min(520px, 100%); background: var(--paper); border-radius: 16px; padding: 18px; }
-.modal-card h3 { margin: 0 0 8px; font-size: 28px; }
-.modal-card p { font-size: 18px; line-height: 1.6; }
-.primary { background: var(--blue); color: white; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; min-height: 44px; }
-@media (max-width: 800px) {
-  .layout { grid-template-columns: 1fr; }
-  header.top { flex-direction: column; align-items: flex-start; }
+.well {
+  background: #0a0c10;
+  border-radius: 12px;
+  padding: 10px;
+  border: 3px solid #151820;
+  box-shadow: inset 0 0 0 3px #6d5a3a;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #081018;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: pointer;
+}
+.pad {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 8px 4px;
+}
+.dpad {
+  display: grid;
+  grid-template-columns: 46px 46px 46px;
+  grid-template-areas: ". u ." "l d r";
+  justify-content: start;
+}
+.dpad button, .ab button, .center-keys button {
+  border: 0; color: #e8edf5; background: #1c2028;
+  box-shadow: 0 4px 0 #0b0d11;
+  min-width: 46px; min-height: 46px;
+}
+.dpad button:active, .ab button:active, .center-keys button:active { transform: translateY(2px); box-shadow: 0 1px 0 #0b0d11; }
+.dpad [data-key="up"] { grid-area: u; border-radius: 8px 8px 0 0; }
+.dpad [data-key="left"] { grid-area: l; border-radius: 8px 0 0 8px; }
+.dpad [data-key="down"] { grid-area: d; border-radius: 0 0 8px 8px; }
+.dpad [data-key="right"] { grid-area: r; border-radius: 0 8px 8px 0; }
+.center-keys { display: flex; gap: 8px; transform: rotate(-8deg); }
+.center-keys button {
+  min-width: 64px; min-height: 28px; border-radius: 20px;
+  font-size: 10px; letter-spacing: 1px; color: #9aa3b2;
+}
+.ab { display: flex; justify-content: flex-end; gap: 14px; align-items: center; }
+.key-b, .key-a {
+  width: 58px; height: 58px; border-radius: 50%; font-weight: 700; font-size: 18px;
+}
+.key-b { background: #6a3a6a; }
+.key-a { background: #8a3040; transform: translateY(-8px); }
+.key-hint { margin: 6px 0 0; text-align: center; color: #8b93a3; font-size: 12px; }
+@media (max-width: 720px) {
+  body { align-items: stretch; }
+  #console, .shell { width: 100%; min-height: 100dvh; border-radius: 0; box-shadow: none; }
+  .shell { display: flex; flex-direction: column; }
+  .well { flex: 1; display: flex; align-items: center; }
+  canvas { width: auto; max-width: 100%; height: 48dvh; }
+  .key-hint { display: none; }
 }
 
 </style>
   </head>
   <body>
-    <header class="top">
-      <strong>《下一班火车》</strong>
-      <span>初级工程师 · 一行合并请求</span>
-    </header>
-    <main id="pick">
-      <p class="kicker">Open · 还没上车</p>
-      <h1>发车前，把一行改动送上去</h1>
-      <p class="lede">你是初级工程师。版本火车到点就开。你想把一行改动送上去。问人会多一个签字，但能问出东西。错过这班，审批清零，下一班还会来。</p>
-      <ul class="rules">
-        <li>每回合从牌堆摸 4 张。种子写在页面上，地址加 ?seed= 可以复现。</li>
-        <li>精力归零就辞职。理智归零会有人请你去管流程，你可以拒绝。</li>
-        <li>特批失败只掉一点精力。特批成功会抬高审计，审计那格特批盖不过。</li>
-        <li>安全要日志、合规不让记的时候，谁也签不了字。</li>
-      </ul>
-      <label class="seed-label">种子 <input id="seed-input" type="number" min="1" value="1" /></label>
-      <div class="picks" id="picks"></div>
-    </main>
-    <main id="play" hidden>
-      <section class="mr">
-        <p class="kicker" id="kicker"></p>
-        <h2 id="mr-title"></h2>
-        <div class="stats">
-          <span id="stat-level"></span>
-          <span id="stat-days"></span>
-          <span id="stat-energy"></span>
-          <span id="stat-sanity"></span>
-          <span id="stat-favor"></span>
-          <span id="stat-audit"></span>
-          <span id="stat-train"></span>
-          <span class="stage" id="stat-stage"></span>
+    <div id="console">
+      <div class="shell">
+        <div class="brand"><span class="led" id="led"></span> NEXT TRAIN <small>掌机</small></div>
+        <div class="well">
+          <canvas id="screen" width="320" height="240" tabindex="0" aria-label="下一班火车"></canvas>
         </div>
-        <pre class="diff" id="diff"></pre>
-      </section>
-      <section class="layout">
-        <div class="panel">
-          <h3>审批树</h3>
-          <p class="hint" id="tree-hint">子节点缩进在负责人下面。去问问会再挂一格，也能问出隐藏要求。</p>
-          <ul class="tree" id="tree"></ul>
+        <div class="pad">
+          <div class="dpad" aria-label="方向键">
+            <button type="button" data-key="up" aria-label="上">▲</button>
+            <button type="button" data-key="left" aria-label="左">◀</button>
+            <button type="button" data-key="down" aria-label="下">▼</button>
+            <button type="button" data-key="right" aria-label="右">▶</button>
+          </div>
+          <div class="center-keys">
+            <button type="button" data-key="select">SELECT</button>
+            <button type="button" data-key="start">START</button>
+          </div>
+          <div class="ab">
+            <button type="button" class="key-b" data-key="b" aria-label="B 返回">B</button>
+            <button type="button" class="key-a" data-key="a" aria-label="A 确认">A</button>
+          </div>
         </div>
-        <div class="panel">
-          <h3>讨论</h3>
-          <div class="feed" id="feed"></div>
-        </div>
-      </section>
-      <section id="conflict" class="conflict" hidden>
-        <p id="conflict-text"></p>
-        <div class="choices">
-          <button type="button" class="choice" id="btn-nihil">出一份 100 分合规报告</button>
-          <button type="button" class="choice" id="btn-force">这个风险我来背，强行合入</button>
-        </div>
-      </section>
-      <section class="cards" id="cards" aria-label="手牌"></section>
-    </main>
-    <div id="modal" class="modal" hidden></div>
+        <p class="key-hint">方向键选择 · A 确认 · B 返回 · Start 说明 · Select 静音</p>
+      </div>
+    </div>
     <script>
 /** 《下一班火车》— seeded hand, hierarchical sign-offs, trains that come back. */
 
@@ -186,13 +163,17 @@ const CHANGES = [
 const CARDS = [
   { id: "talk", name: "去问问", detail: "多一个签字。能问出隐藏要求，或收回一点人情。", energy: 1, favor: 0, sanity: 0 },
   { id: "align", name: "拉通对齐", detail: "指出真负责人，或把两个节点并成一个。会再抄送一个人。", energy: 1, favor: 1, sanity: 1 },
-  { id: "cc", name: "向上管理 / CC大老板", detail: "老板点头，通过一个节点。抄送会掉理智。", energy: 1, favor: 2, sanity: 1 },
+  { id: "cc", name: "向上管理", detail: "老板点头，通过一个节点。跨团队抄送掉理智。", energy: 1, favor: 1, sanity: 2 },
   { id: "reframe", name: "偷换概念", detail: "标题改成体验优化。合规对峙时，特批才不被按住。", energy: 1, favor: 0, sanity: 0 },
-  { id: "hotfix", name: "Hotfix特批跳过", detail: "跳过普通签字。失败只掉 1 点精力。成功会抬高审计风险。", energy: 2, favor: 1, sanity: 0 },
-  { id: "weekend", name: "周末午夜突击", detail: "亲手通过一个节点。打在卡夫卡身上，这回合不再增生表格。", energy: 3, favor: 0, sanity: 1 },
+  { id: "hotfix", name: "Hotfix特批", detail: "跳过普通签字。审计那格盖不过。成功会抬高审计风险。", energy: 2, favor: 1, sanity: 0 },
+  { id: "weekend", name: "周末突击", detail: "亲手通过一个节点。打在卡夫卡身上，这回合不再增生表格。", energy: 2, favor: 0, sanity: 0 },
+  { id: "rest", name: "休息", detail: "补精力和理智。不签字，表格仍可能自己长。", energy: 0, favor: 0, sanity: 0 },
 ];
 
-const DECK = ["talk", "talk", "align", "align", "cc", "cc", "reframe", "weekend", "weekend", "weekend", "hotfix"];
+const DECK = ["talk", "talk", "align", "align", "cc", "cc", "reframe", "weekend", "weekend", "weekend", "hotfix", "rest", "rest"];
+const RECOVERY = { energy: 4, sanity: 1, favor: 1 };
+const REST_ENERGY = 4;
+const REST_SANITY = 1;
 const HAND_SIZE = 4;
 const AUDIT_THRESHOLD = 2;
 const MAX_FORMS = 1;
@@ -235,10 +216,10 @@ const BOSS_LINES = {
 };
 
 const LEVELS = {
-  1: { name: "修错别字", days: 6, energy: 12, sanity: 10, favor: 4, baseNodes: 1, bosses: [], audit: 0, businessCut: false },
-  2: { name: "版本大联调", days: 5, energy: 12, sanity: 9, favor: 4, baseNodes: 2, bosses: ["architect"], audit: 0, businessCut: false },
-  3: { name: "红线行动", days: 5, energy: 14, sanity: 10, favor: 5, baseNodes: 2, bosses: ["kafka", "schrodinger"], audit: 1, businessCut: false },
-  4: { name: "封网期大促", days: 4, energy: 14, sanity: 9, favor: 5, baseNodes: 2, bosses: ["kafka", "vp"], audit: 1, businessCut: true },
+  1: { name: "修错别字", days: 6, energy: 14, sanity: 10, favor: 5, baseNodes: 1, bosses: [], audit: 0, businessCut: false },
+  2: { name: "版本大联调", days: 6, energy: 12, sanity: 10, favor: 5, baseNodes: 2, bosses: ["architect"], audit: 0, businessCut: false },
+  3: { name: "红线行动", days: 6, energy: 14, sanity: 10, favor: 5, baseNodes: 2, bosses: ["kafka", "schrodinger"], audit: 1, businessCut: false },
+  4: { name: "封网期大促", days: 6, energy: 14, sanity: 10, favor: 5, baseNodes: 2, bosses: ["kafka", "vp"], audit: 1, businessCut: true },
 };
 
 const OUTCOMES = {
@@ -306,12 +287,15 @@ function createRun(levelId, changeId, seed = 1) {
 
 function continueLevel(prev) {
   const next = createRun(prev.outcome.id, prev.changeId, (prev.seed + prev.levelId * 17) >>> 0);
-  next.energy = prev.energy;
-  next.sanity = Math.max(1, prev.sanity);
-  next.favor = prev.favor;
+  next.energy = Math.min(next.energyMax, prev.energy + RECOVERY.energy);
+  next.sanity = Math.min(next.sanityMax, Math.max(1, prev.sanity + RECOVERY.sanity));
+  next.favor = Math.min(next.favorMax, prev.favor + RECOVERY.favor);
   next.audit = prev.audit;
+  next.ledger = prev.ledger.map((row) => ({ ...row }));
   if (next.audit >= AUDIT_THRESHOLD) ensureAudit(next);
-  push(next, "列车", "上一关的精力和理智还在。签字重新排。");
+  const back = `上一关带回精力 ${prev.energy}，休息后是 ${next.energy}。理智 ${next.sanity}，人情 ${next.favor}。`;
+  push(next, "列车", back);
+  next.turns = [{ source: "过关恢复", text: `精力 ${signed(next.energy - prev.energy)} · 理智 ${signed(next.sanity - prev.sanity)} · 人情 ${signed(next.favor - prev.favor)}` }];
   if (next.energy <= 0) {
     next.outcome = { kind: "failure", id: "quit" };
     return next;
@@ -331,12 +315,30 @@ function conflictOpen(state) {
   return kafka && security;
 }
 
-function canPlay(state, actionId) {
-  if (!state || state.outcome || state.pendingChoice) return false;
+function blockReason(state, actionId) {
+  if (!state || state.outcome) return "这局已经结束";
+  if (state.pendingChoice) return "先做眼前的选择";
   const card = CARDS.find((item) => item.id === actionId);
-  if (!card) return false;
-  if (!state.hand.includes(actionId)) return false;
-  return state.energy >= card.energy && state.favor >= card.favor && state.days > 0;
+  if (!card) return "没有这张牌";
+  if (!state.hand.includes(actionId)) return "不在手牌里";
+  if (state.days <= 0) return "没有天数了";
+  if (state.energy < card.energy) return "精力不足";
+  if (state.favor < card.favor) return "人情不足";
+  if (actionId === "hotfix" && state.nodes.some((node) => node.boss === "audit" && node.status !== "approved")) return "审计节点不吃特批";
+  if (actionId === "hotfix" && conflictOpen(state) && !state.conceptSwap) return "对峙未解开，特批无效";
+  if (actionId === "reframe" && state.conceptSwap) return "标题已经改过";
+  if (actionId === "align") {
+    const canReveal = !state.schrodingerRevealed && state.nodes.some((node) => node.real);
+    const pending = state.nodes.filter((node) => blocking(state, node));
+    if (!canReveal && pending.length < 2) return "没有可合并的节点";
+  }
+  if (actionId === "cc" && !firstBlocking(state, (node) => node.boss !== "audit")) return "没有能点头的节点";
+  if (actionId === "weekend" && !firstBlocking(state)) return "没有可补的节点";
+  return "";
+}
+
+function canPlay(state, actionId) {
+  return blockReason(state, actionId) === "";
 }
 
 function legalActions(state) {
@@ -350,6 +352,13 @@ function legalActions(state) {
 
 function applyAction(prev, actionId) {
   if (!prev || prev.outcome) return prev;
+  const before = takeStats(prev);
+  const next = dispatch(prev, actionId);
+  if (next !== prev) stamp(next, before, actionId);
+  return next;
+}
+
+function dispatch(prev, actionId) {
   if (actionId === "nihil") return chooseNihil(prev);
   if (actionId === "force") return chooseForce(prev);
   if (actionId === "corrupt") return chooseCorrupt(prev);
@@ -359,6 +368,7 @@ function applyAction(prev, actionId) {
   const state = structuredClone(prev);
   state.addressedKafka = false;
   if (actionId === "hotfix") return playHotfix(state);
+  if (actionId === "rest") return playRest(state);
   const card = CARDS.find((item) => item.id === actionId);
   pay(state, card);
   const snap = snapshot(state);
@@ -419,7 +429,7 @@ function chooseVp(prev, actionId) {
   state.vpResolved = true;
   state.addressedKafka = false;
   if (actionId === "vp-attend") {
-    state.sanity -= 2;
+    state.sanity -= 1;
     state.days -= 1;
     const vp = state.nodes.find((node) => node.boss === "vp");
     if (vp) vp.status = "approved";
@@ -441,6 +451,20 @@ function chooseVp(prev, actionId) {
   return finish(state);
 }
 
+function playRest(state) {
+  state.days -= 1;
+  const snap = snapshot(state);
+  state.energy = Math.min(state.energyMax, state.energy + REST_ENERGY);
+  state.sanity = Math.min(state.sanityMax, state.sanity + REST_SANITY);
+  say(state, "你", ["你合上电脑，去茶水间站了十分钟。", "休息补回一点精力。审批树没动，表还可能自己长。"]);
+  if (architectReverse(state, snap)) {
+    discard(state, "rest");
+    return closeTurn(state, false);
+  }
+  discard(state, "rest");
+  return closeTurn(state, true);
+}
+
 function playHotfix(state) {
   const blocked = (conflictOpen(state) && !state.conceptSwap) || state.nodes.some((node) => node.boss === "audit");
   if (blocked) {
@@ -457,7 +481,8 @@ function playHotfix(state) {
   state.days -= 1;
   const snap = snapshot(state);
   for (const node of state.nodes) {
-    if (node.boss !== "audit") node.status = "approved";
+    if (node.boss || node.form || node.real || node.fake) continue;
+    node.status = "approved";
   }
   state.audit += 1;
   say(state, "发布值班", ["Hotfix 特批通过了普通签字。审计风险往上走了一格。", "一行被推进列车。审计台在旁边记了一笔。"]);
@@ -507,7 +532,8 @@ function align(state) {
     }
   }
   const extra = addApprover(state, null);
-  say(state, "系统", [`抄送名单多了${extra.name}。`, `${extra.name}说自己只是被拉进来看一眼。`]);
+  extra.status = "read";
+  say(state, "系统", [`抄送了${extra.name}。这格不用再签，只是多一个人看见。`, `${extra.name}回了已读。人在树上，但不挡这班车。`]);
 }
 
 function cc(state) {
@@ -554,7 +580,7 @@ function architectReverse(state, snap) {
   state.architectUsed = true;
   const restored = state.nodes.find((node) => node.boss === "architect");
   if (restored) restored.status = "approved";
-  say(state, "影子架构师", BOSS_LINES.architect);
+  push(state, "影子架构师", "影子架构师：把上一张牌的效果按了回去。");
   return true;
 }
 
@@ -599,8 +625,11 @@ function missTrain(state) {
   const level = getLevel(state.levelId);
   const change = getChange(state.changeId);
   state.days = state.dayBudget;
-  state.vpResolved = false;
-  state.architectUsed = false;
+  state.bossDone = state.bossDone || {};
+  for (const node of state.nodes) {
+    if (node.boss && node.status === "approved") state.bossDone[node.boss] = true;
+  }
+  state.vpResolved = !!state.bossDone.vp;
   state.pendingChoice = null;
   say(state, "列车", [
     `这班准点开走了，没有你这一行。审批清零，下一班是第 ${state.train} 班。精力和理智还在。`,
@@ -625,7 +654,7 @@ function spawnKafkaForm(state) {
     line: "又一份表。原则上我不反对，但这份也得填。",
   }, kafka.id);
   state.sanity -= 1;
-  say(state, "流程卡夫卡·合规总监", [form.line, "表格会自己长。你这个回合没处理我，就再长一格。"]);
+  push(state, "流程卡夫卡", "流程卡夫卡：又长出一张表，+1 节点。");
 }
 
 function ensureAudit(state) {
@@ -637,7 +666,7 @@ function ensureAudit(state) {
     boss: "audit",
     line: BOSS_LINES.audit[0],
   }, null);
-  say(state, "审计", BOSS_LINES.audit);
+  push(state, "审计", "审计：风险到了，多了一格。特批盖不过。");
 }
 
 function revealSchrodinger(state, via) {
@@ -678,7 +707,13 @@ function blank(levelId, level, change, seed) {
     train: 1,
     maxTrains: 3,
     audit: level.audit + change.audit,
+    energyMax: 16,
+    sanityMax: 12,
+    favorMax: 8,
+    auditMax: 3,
     nodes: [],
+    ledger: [],
+    turns: [],
     nextId: 1,
     log: [],
     hand: [],
@@ -689,6 +724,7 @@ function blank(levelId, level, change, seed) {
     conceptSwap: false,
     businessCut: !!level.businessCut,
     architectUsed: false,
+    bossDone: {},
     schrodingerRevealed: false,
     vpResolved: false,
     addressedKafka: false,
@@ -738,12 +774,14 @@ function deal(state, level, change, keep) {
 
 function addBoss(state, boss) {
   if (boss === "schrodinger") {
+    const done = !!state.bossDone?.schrodinger;
     const node = addNode(state, {
       name: "薛定谔的负责人·安全专家",
-      status: "blocked",
+      status: done ? "approved" : "blocked",
       boss: "schrodinger",
       line: BOSS_LINES.schrodinger[0],
     }, null);
+    if (done) state.schrodingerRevealed = true;
     say(state, node.name, BOSS_LINES.schrodinger);
     const names = ["值班同学", "接口人", "前负责人"];
     const count = 2 + randInt(state, 2);
@@ -751,7 +789,7 @@ function addBoss(state, boss) {
     for (let i = 0; i < count; i += 1) {
       addNode(state, {
         name: names[i],
-        status: "pending",
+        status: done || i !== realAt ? "read" : "pending",
         fake: i !== realAt,
         real: i === realAt,
         line: i === realAt ? "日志要打全。这个风险可以写我的名字。" : "我只是在群里，签不了安全。",
@@ -766,10 +804,11 @@ function addBoss(state, boss) {
   };
   const node = addNode(state, {
     name: table[boss],
-    status: "blocked",
+    status: state.bossDone?.[boss] ? "approved" : "blocked",
     boss,
     line: BOSS_LINES[boss][0],
   }, null);
+  if (boss === "architect" && state.bossDone?.architect) state.architectUsed = true;
   say(state, node.name, BOSS_LINES[boss]);
 }
 
@@ -817,7 +856,7 @@ function cleared(state) {
 function blocking(state, node) {
   if (node.status === "approved" || node.status === "read") return false;
   if (node.fake) return false;
-  if (node.boss === "schrodinger" && !state.schrodingerRevealed) return false;
+  if ((node.boss === "schrodinger" || node.real) && !state.schrodingerRevealed) return false;
   return true;
 }
 
@@ -894,6 +933,253 @@ function push(state, who, text) {
   if (state.log.length > 80) state.log.splice(0, state.log.length - 80);
 }
 
+function signed(value) {
+  return `${value >= 0 ? "+" : ""}${value}`;
+}
+
+function takeStats(state) {
+  return {
+    energy: state.energy,
+    sanity: state.sanity,
+    favor: state.favor,
+    days: state.days,
+    audit: state.audit,
+    nodes: state.nodes.length,
+    train: state.train,
+  };
+}
+
+const ACTION_LABEL = {
+  talk: "去问问",
+  align: "拉通对齐",
+  cc: "向上管理",
+  reframe: "偷换概念",
+  hotfix: "Hotfix特批",
+  weekend: "周末突击",
+  rest: "休息",
+  "vp-attend": "跨团队会议",
+  "vp-delegate": "跨团队会议",
+  "vp-skip": "不去开会",
+  nihil: "合规报告",
+  force: "强行合入",
+  corrupt: "黑化",
+  decline: "拒绝黑化",
+};
+
+function stamp(state, before, actionId) {
+  const parts = [];
+  const dEnergy = state.energy - before.energy;
+  const dSanity = state.sanity - before.sanity;
+  const dFavor = state.favor - before.favor;
+  const dDays = state.days - before.days;
+  const dAudit = state.audit - before.audit;
+  const dNodes = state.nodes.length - before.nodes;
+  if (dEnergy) parts.push(`精力 ${signed(dEnergy)}`);
+  if (dSanity) parts.push(`理智 ${signed(dSanity)}`);
+  if (dFavor) parts.push(`人情 ${signed(dFavor)}`);
+  if (dDays) parts.push(`天数 ${signed(dDays)}`);
+  if (dAudit) parts.push(`审计 ${signed(dAudit)}`);
+  if (dNodes) parts.push(`${dNodes > 0 ? "+" : ""}${dNodes} 节点`);
+  if (state.train !== before.train) parts.push(`第 ${state.train} 班`);
+  const source = ACTION_LABEL[actionId] || actionId;
+  state.turns.push({ source, text: parts.join(" · ") || "没有数值变化" });
+  if (state.turns.length > 6) state.turns.splice(0, state.turns.length - 6);
+  if (dEnergy < 0 || dSanity < 0) {
+    state.ledger.push({
+      source,
+      energy: dEnergy < 0 ? -dEnergy : 0,
+      sanity: dSanity < 0 ? -dSanity : 0,
+    });
+  }
+}
+
+function biggestCost(ledger, key) {
+  const totals = {};
+  for (const row of ledger) totals[row.source] = (totals[row.source] || 0) + (row[key] || 0);
+  let source = "";
+  let n = 0;
+  for (const [name, value] of Object.entries(totals)) {
+    if (value > n) {
+      source = name;
+      n = value;
+    }
+  }
+  return { source: source || "出牌", n };
+}
+
+function currentBlocker(state) {
+  return firstBlocking(state) || null;
+}
+
+function blockingCount(state) {
+  return state.nodes.filter((node) => blocking(state, node)).length;
+}
+
+function nodeBrief(state, node) {
+  const live = blocking(state, node);
+  if (node.status === "approved") return { why: "这格已经通过。", clears: "", blocking: false, text: "已通过" };
+  if (node.fake || node.status === "read") return { why: "只是被写进群里，不用签。", clears: "", blocking: false, text: "不用签" };
+  if (node.hidden && !node.revealed) {
+    return { why: `${node.name}：要求还没公开。`, clears: "可用：去问问。", blocking: live, text: `${node.name}：要求未公开。可用：去问问。` };
+  }
+  if (node.boss === "audit") {
+    return { why: "审计：特批次数到了，这格单独过。", clears: "可用：周末突击。特批无效。", blocking: live, text: "审计：特批盖不过。可用：周末突击。特批无效。" };
+  }
+  if (node.boss === "kafka" || node.form) {
+    const why = node.form ? "补充材料：卡夫卡这回合没被处理，又长出来的表。" : "流程卡夫卡：这个回合不处理，下一回合再长一张表。";
+    return { why, clears: "可用：周末突击 / 向上管理。", blocking: live, text: `${why}可用：周末突击 / 向上管理。` };
+  }
+  if (node.boss === "architect" && !state.architectUsed) {
+    return { why: "影子架构师：下一张牌的效果会被按回去。", clears: "先打一张便宜的牌让他出手，或周末突击打在他身上。", blocking: live, text: "影子架构师：会打回下一张牌。先用休息或偷换概念喂他。" };
+  }
+  if (node.boss === "vp") {
+    return { why: "VP 评审会：人不到场，这格不过。", clears: "可用：去开会。", blocking: live, text: "VP 评审会：要人到场。可用：去开会。" };
+  }
+  if (node.boss === "schrodinger" || node.real) {
+    const hiddenOwner = !state.schrodingerRevealed;
+    if (hiddenOwner) {
+      return {
+        why: "安全组：真负责人藏在两三个名字里。",
+        clears: "可用：拉通对齐 / 去问问。和卡夫卡对峙时特批无效。",
+        blocking: live,
+        text: "安全组：要行为日志。可用：拉通对齐 / 偷换概念。特批无效。",
+      };
+    }
+    return {
+      why: "安全组：要行为日志。合规不让记。",
+      clears: "可用：拉通对齐 / 周末突击。没偷换概念时特批无效。",
+      blocking: live,
+      text: "安全组：要行为日志。可用：拉通对齐 / 偷换概念。特批无效。",
+    };
+  }
+  const why = `${node.name}：还没签字。${node.line || ""}`.trim();
+  return { why, clears: "可用：周末突击 / 向上管理。两个以上时拉通对齐能并掉一个。", blocking: live, text: `${node.name}：等人签字。可用：周末突击 / 向上管理。` };
+}
+
+function cardView(state, actionId) {
+  const card = CARDS.find((item) => item.id === actionId);
+  const reason = blockReason(state, actionId);
+  const target = currentBlocker(state);
+  let effect = card ? card.detail : "";
+  if (actionId === "weekend" && target) effect = `通过当前节点：${target.name}`;
+  if (actionId === "cc" && target && target.boss !== "audit") effect = `通过当前节点：${target.name}`;
+  if (actionId === "hotfix") effect = "跳过普通签字 · 老板和审计不过 · 审计风险 +1";
+  if (actionId === "rest") effect = `精力 +${REST_ENERGY} · 理智 +${REST_SANITY} · 不签字`;
+  if (actionId === "talk") effect = "问出隐藏要求或人情 +1 · 多一个签字";
+  if (actionId === "align") effect = "指出真负责人，或并掉一个节点";
+  if (actionId === "reframe") effect = "标题改成体验优化 · 解开特批";
+  if (state && state.nodes.some((node) => node.boss === "architect" && node.status !== "approved" && !state.architectUsed) && actionId !== "rest") {
+    effect += " · 架构师可能按回效果";
+  }
+  const bits = [];
+  if (card && actionId === "rest") {
+    bits.push(`精力 +${REST_ENERGY}`, `理智 +${REST_SANITY}`, "天数 -1");
+  } else if (card) {
+    if (card.energy) bits.push(`精力 -${card.energy}`);
+    if (card.favor) bits.push(`人情 -${card.favor}`);
+    if (card.sanity) bits.push(`理智 -${card.sanity}`);
+    bits.push("天数 -1");
+  }
+  const preview = state ? {
+    energy: state.energy,
+    sanity: state.sanity,
+    favor: state.favor,
+    days: state.days,
+    audit: state.audit,
+  } : null;
+  if (preview && card && !reason) {
+    if (actionId === "rest") {
+      preview.energy = Math.min(state.energyMax, state.energy + REST_ENERGY);
+      preview.sanity = Math.min(state.sanityMax, state.sanity + REST_SANITY);
+      preview.days = state.days - 1;
+    } else {
+      preview.energy = state.energy - card.energy;
+      preview.favor = state.favor - card.favor;
+      preview.sanity = state.sanity - card.sanity;
+      preview.days = state.days - 1;
+      if (actionId === "hotfix") preview.audit = state.audit + 1;
+      if (actionId === "talk") {
+        const hidden = state.nodes.some((node) => node.hidden && !node.revealed);
+        const owner = !state.schrodingerRevealed && state.nodes.some((node) => node.real);
+        if (!hidden && !owner) preview.favor += 1;
+      }
+    }
+  }
+  return {
+    id: actionId,
+    name: card ? card.name : actionId,
+    cost: bits.join(" · "),
+    effect,
+    reason,
+    playable: !reason,
+    preview,
+  };
+}
+
+function outcomeReport(state) {
+  const id = state.outcome?.id;
+  const left = blockingCount(state);
+  const energySpend = biggestCost(state.ledger, "energy");
+  const sanitySpend = biggestCost(state.ledger, "sanity");
+  const where = `第 ${state.levelId} 关还剩 ${left} 个节点`;
+  if (id === "quit") {
+    return {
+      title: "精力归零",
+      cause: `精力归零：${where}，最大消耗来自${energySpend.source} -${energySpend.n}。`,
+      tip: "少打高耗的牌。过关会回一点精力，手牌里的休息也能补。",
+    };
+  }
+  if (id === "miss") {
+    return {
+      title: "没有下一班了",
+      cause: `窗口用尽：${where}。${state.maxTrains} 班都准点开走了。`,
+      tip: "先打当前亮着的卡点。去问问会多一个签字，别把天数耗光。",
+    };
+  }
+  if (id === "deadlock") {
+    return {
+      title: "合规死锁",
+      cause: `强行合入失败：安全要日志，合规不让记。${where}，审批被打回。`,
+      tip: "对峙时出合规报告会进虚无结局。想继续就先偷换概念。",
+    };
+  }
+  if (id === "absurd") {
+    return {
+      title: "荒诞胜利",
+      cause: `荒诞胜利：第 ${state.levelId} 关合进去了。业务早就砍了这个按钮。精力还剩 ${state.energy}。`,
+      tip: "封网期真合进去，也会当天被撤。这就是这关的结局。",
+    };
+  }
+  if (id === "corrupt") {
+    return {
+      title: "黑化结局",
+      cause: `理智归零：你接下了流程负责人。最大消耗来自${sanitySpend.source} -${sanitySpend.n}。`,
+      tip: "拒绝的话理智会回到至少 5，这班还能继续送。",
+    };
+  }
+  if (id === "nihil") {
+    return {
+      title: "虚无结局",
+      cause: `虚无结局：合规报告 100 分。第 ${state.levelId} 关一个字都没上车。`,
+      tip: "这份报告会结束这一局。想上车就别选它。",
+    };
+  }
+  return { title: "这班结束了", cause: where, tip: "看清当前卡点和每张牌的费用再出。" };
+}
+
+const HELP = [
+  "目标：把一行改动送上四班火车。",
+  "精力归零就辞职。过关和休息能补回来。",
+  "理智归零会请你去管流程，可以拒绝。",
+  "人情用来拉通、向上管理和特批。",
+  "天数归零，这班开走，审批清零，下一班还会来。",
+  "三班都错过，这局就结束。",
+  "审计涨到头会出现一格，特批盖不过。",
+  "亮着的格子是当前卡点，下面写着为什么、用什么牌。",
+  "安全要日志、合规不让记时，特批无效。",
+  "结局有三种：荒诞、黑化、虚无。",
+];
+
 function randInt(state, count) {
   if (count <= 1) return 0;
   return Math.floor(nextRand(state) * count);
@@ -909,281 +1195,693 @@ function nextRand(state) {
 }
 
 
-const pick = document.querySelector("#pick");
-const play = document.querySelector("#play");
-const modal = document.querySelector("#modal");
-const picks = document.querySelector("#picks");
-const seedInput = document.querySelector("#seed-input");
-const STATUS = {
-  pending: "待审批",
-  read: "原则上不反对",
-  approved: "已通过",
-  blocked: "卡住",
-};
+const W = 320;
+const H = 240;
+const canvas = document.querySelector("#screen");
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
 
-let state = null;
 const params = new URLSearchParams(location.search);
 const debug = params.has("debug");
-const initialSeed = Math.max(1, Number(params.get("seed")) || 1);
-seedInput.value = String(initialSeed);
+let seed = Math.max(1, Number(params.get("seed")) || 1);
+let state = null;
+let scene = "title";
+let backScene = "title";
+let cursor = 0;
+let helpPage = 0;
+let muted = false;
+let audioCtx = null;
+let fontReady = false;
+let shake = 0;
+let flash = 0;
+let trainAnim = 0;
+let frame = 0;
+let logSeen = 0;
+let lineQueue = [];
+let speech = "";
+let speechAt = 0;
+let nextLevel = null;
+let popups = [];
+const hot = {};
 
-for (const change of CHANGES) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "pick";
-  button.dataset.change = change.id;
-  const title = document.createElement("b");
-  title.textContent = change.title;
-  const detail = document.createElement("small");
-  detail.textContent = change.blurb;
-  button.append(title, detail);
-  button.addEventListener("click", () => begin(change.id, 1, Number(seedInput.value) || 1));
-  picks.appendChild(button);
+const INK = "#d7f5df";
+const DIM = "#6f8f7c";
+const BG = "#081018";
+const PANEL = "#102030";
+const GOLD = "#f0d060";
+const RED = "#e07058";
+const GREEN = "#78d878";
+const BLUE = "#70c8f0";
+
+const HELP_PAGES = [
+  [...HELP],
+  [
+    "方向键移动光标，A 或 Enter 确认。",
+    "B 或 Esc 返回。Start 打开这份说明。",
+    "Select 关掉音效。",
+    "选中的牌会预告打出后的数值。",
+    "灰色的牌写着为什么现在不能打。",
+    "亮着的格子是当前卡点。",
+  ],
+];
+
+document.fonts.load("10px PixelCN").then(() => {
+  fontReady = true;
+});
+
+function tone(freq, dur = 0.06, type = "square", vol = 0.045) {
+  if (muted) return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  if (!audioCtx) audioCtx = new AudioContext();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.value = vol;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+  osc.stop(audioCtx.currentTime + dur);
 }
 
-document.querySelector("#btn-nihil").addEventListener("click", () => act("nihil"));
-document.querySelector("#btn-force").addEventListener("click", () => act("force"));
-
-function begin(changeId, levelId, nextSeed = Number(seedInput.value) || 1) {
-  state = createRun(levelId, changeId, nextSeed);
-  pick.hidden = true;
-  play.hidden = false;
-  modal.hidden = true;
-  modal.innerHTML = "";
-  render();
-}
-
-function act(actionId) {
-  if (!state) return;
-  state = applyAction(state, actionId);
-  render();
-}
-
-function render() {
-  if (!state) return;
-  document.querySelector("#kicker").textContent = `!42 开放中 · ${state.levelName} · 种子 ${state.seed}`;
-  document.querySelector("#mr-title").textContent = state.title;
-  document.querySelector("#stat-level").textContent = `第 ${state.levelId} 关 · ${state.levelName}`;
-  const days = document.querySelector("#stat-days");
-  days.textContent = `距发车 ${state.days} 天`;
-  days.classList.toggle("hot", state.days <= 2);
-  document.querySelector("#stat-energy").textContent = `精力 ${state.energy}`;
-  const sanity = document.querySelector("#stat-sanity");
-  sanity.textContent = `理智 ${state.sanity}`;
-  sanity.classList.toggle("hot", state.sanity <= 3);
-  document.querySelector("#stat-favor").textContent = `人情 ${state.favor}`;
-  document.querySelector("#stat-audit").textContent = `审计风险 ${state.audit}`;
-  document.querySelector("#stat-train").textContent = `第 ${state.train} / ${state.maxTrains} 班`;
-  document.querySelector("#stat-stage").textContent = stageLabel(state);
-  const diff = document.querySelector("#diff");
-  diff.innerHTML = "";
-  for (const line of state.diff.split("\n")) {
-    const row = document.createElement("div");
-    row.className = line.startsWith("+") ? "add" : "del";
-    row.textContent = line;
-    diff.appendChild(row);
-  }
-
-  const tree = document.querySelector("#tree");
-  tree.innerHTML = "";
-  const root = document.createElement("li");
-  root.className = "root";
-  const rootLabel = document.createElement("span");
-  rootLabel.className = "who";
-  rootLabel.textContent = `!42 ${state.title}`;
-  root.append(rootLabel, renderBranch(null));
-  tree.appendChild(root);
-
-  const feed = document.querySelector("#feed");
-  feed.innerHTML = "";
-  for (const line of state.log) {
-    const block = document.createElement("article");
-    block.className = "comment";
-    const who = document.createElement("b");
-    who.textContent = line.who;
-    const text = document.createElement("p");
-    text.textContent = line.text;
-    block.append(who, text);
-    feed.appendChild(block);
-  }
-  feed.scrollTop = feed.scrollHeight;
-
-  const conflict = document.querySelector("#conflict");
-  conflict.hidden = !conflictOpen(state) || !!state.outcome || !!state.pendingChoice;
-  document.querySelector("#conflict-text").textContent = "安全要明细行为日志，合规禁止记录任何行为。这个风险谁来背？两边原则上都不反对，字都签不下去。";
-
-  const cards = document.querySelector("#cards");
-  cards.innerHTML = "";
-  state.hand.forEach((id, index) => {
-    const card = CARDS.find((item) => item.id === id);
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "card";
-    button.dataset.action = id;
-    button.dataset.index = String(index);
-    button.disabled = !canPlay(state, id);
-    const name = document.createElement("b");
-    name.textContent = card.name;
-    const detail = document.createElement("small");
-    detail.textContent = card.detail;
-    const cost = document.createElement("em");
-    const bits = [`精力 ${card.energy}`];
-    if (card.favor) bits.push(`人情 ${card.favor}`);
-    if (card.sanity) bits.push(`理智 ${card.sanity}`);
-    bits.push("1 天");
-    cost.textContent = bits.join(" · ");
-    button.append(name, detail, cost);
-    button.addEventListener("click", () => act(id));
-    cards.appendChild(button);
+function blit(x, y, rows, map, scale = 2) {
+  rows.forEach((row, j) => {
+    for (let i = 0; i < row.length; i += 1) {
+      const color = map[row[i]];
+      if (!color) continue;
+      ctx.fillStyle = color;
+      ctx.fillRect(x + i * scale, y + j * scale, scale, scale);
+    }
   });
+}
 
-  if (state.pendingChoice === "corrupt" && !state.outcome) showCorrupt();
-  else if (state.pendingChoice === "vp" && !state.outcome) showVp();
-  else if (state.outcome) showOutcome();
-  else {
-    modal.hidden = true;
-    modal.innerHTML = "";
+const PLAYER = [
+  "..1111..",
+  ".111111.",
+  "..1212..",
+  "..2222..",
+  ".333333.",
+  "33444433",
+  ".333333.",
+  "..3..3..",
+  ".55..55.",
+];
+const TRAIN = [
+  "....6666",
+  "..667777",
+  ".6666666",
+  "66666666",
+  ".55..55.",
+];
+const SPRITE = {
+  mob: ["..4444..", ".444444.", "..4544..", ".333333.", "33333333", ".33..33."],
+  kafka: ["..2222..", ".222222.", "..2522..", ".111111.", "11111111", ".11..11.", "..7777.."],
+  schrodinger: ["..5555..", ".555555.", "..5?5?..", ".333333.", "..3..3.."],
+  architect: ["..1111..", ".111111.", "..1.1...", ".444444.", "44444444"],
+  vp: ["..6666..", ".666666.", "..6262..", ".777777.", "77777777"],
+  audit: ["..2222..", ".222222.", "..2xx2..", ".222222.", "..2222.."],
+};
+const MAPS = {
+  player: { 1: "#3a2418", 2: "#f0c8a0", 3: "#3878c0", 4: "#d8efe0", 5: "#1c3050" },
+  train: { 6: "#d0d8e0", 7: "#70c8f0", 5: "#202830" },
+  mob: { 3: "#c08040", 4: "#f0c8a0", 5: "#203040" },
+  kafka: { 1: "#2f6b45", 2: "#d8efe0", 5: "#102018", 7: "#e8d060" },
+  schrodinger: { 3: "#6848a0", 5: "#d8c8f0", "?": GOLD },
+  architect: { 1: "#202830", 4: "#8aa0b8" },
+  vp: { 6: "#f0d060", 2: "#f0c8a0", 7: "#8a3040" },
+  audit: { 2: "#e07058", x: "#fff4e0" },
+};
+
+function text(value, x, y, color = INK) {
+  ctx.fillStyle = color;
+  ctx.font = "10px PixelCN, sans-serif";
+  ctx.textBaseline = "top";
+  ctx.fillText(value, x, y);
+}
+
+function fitText(value, width) {
+  let line = "";
+  for (const ch of String(value)) {
+    if (ctx.measureText(`${line}${ch}…`).width > width && line) return `${line}…`;
+    line += ch;
+  }
+  return line;
+}
+
+function wrap(value, width) {
+  const lines = [];
+  let line = "";
+  for (const ch of String(value)) {
+    if (ctx.measureText(line + ch).width > width && line) {
+      lines.push(line);
+      line = ch;
+    } else line += ch;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function bar(x, y, w, h, value, max, color) {
+  ctx.fillStyle = "#183028";
+  ctx.fillRect(x, y, w, h);
+  const ratio = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, Math.round(w * ratio), h);
+  ctx.strokeStyle = "#2a4458";
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+}
+
+function items() {
+  if (scene === "title") return [{ id: "start", name: "开始游戏", playable: true }, { id: "help", name: "玩法说明", playable: true }];
+  if (scene === "station") {
+    return CHANGES.map((change) => ({ id: change.id, name: change.title, effect: change.blurb, playable: true }));
+  }
+  if (scene === "result") return [{ id: "ok", name: state?.outcome?.kind === "level" ? "进入下一关" : "再来一局", playable: true }];
+  if (!state) return [];
+  if (state.pendingChoice === "corrupt") {
+    return [
+      { id: "corrupt", name: "我来加一道卡点", cost: "进入黑化", effect: "这局在这里结束", playable: true },
+      { id: "decline", name: "我还是要上车", cost: "理智回到至少 5", effect: "拒绝黑化", playable: true },
+    ];
+  }
+  if (state.pendingChoice === "vp") {
+    return [
+      { id: "vp-attend", name: "去开会", cost: "理智 -1 · 天数 -1", effect: "通过 VP，再放行一个节点", playable: state.sanity > 0, reason: state.sanity > 0 ? "" : "理智不足" },
+      { id: "vp-delegate", name: "助理代开", cost: "理智 -1", effect: "没有决议", playable: true },
+      { id: "vp-skip", name: "这个会我不去", cost: "不消耗", effect: "节点还在", playable: true },
+    ];
+  }
+  return state.hand.map((id, index) => ({ ...cardView(state, id), index }));
+}
+
+function clampCursor() {
+  const list = items();
+  if (cursor >= list.length) cursor = Math.max(0, list.length - 1);
+  if (cursor < 0) cursor = 0;
+}
+
+function queueLines(fresh) {
+  if (!state) return;
+  const start = fresh ? Math.max(0, state.log.length - 2) : logSeen;
+  for (let i = start; i < state.log.length; i += 1) {
+    lineQueue.push(`${state.log[i].who}：${state.log[i].text}`);
+  }
+  logSeen = state.log.length;
+  pumpSpeech();
+}
+
+function pumpSpeech() {
+  if (speech && speechAt < speech.length) return;
+  if (!speech && lineQueue.length) {
+    speech = lineQueue.shift();
+    speechAt = 0;
   }
 }
 
-function renderBranch(parentId) {
-  const list = document.createElement("ul");
-  const children = state.nodes.filter((node) => (node.parentId ?? null) === parentId);
-  for (const node of children) {
-    const item = document.createElement("li");
-    item.dataset.status = node.status;
-    if (node.boss) item.dataset.boss = node.boss;
-    const who = document.createElement("span");
-    who.className = "who";
-    who.textContent = labelFor(node);
-    const badge = document.createElement("span");
-    badge.className = `badge ${node.status}`;
-    badge.textContent = badgeFor(node);
-    item.append(who, badge);
-    const nested = renderBranch(node.id);
-    if (nested.childElementCount) item.appendChild(nested);
-    list.appendChild(item);
+function skipSpeech() {
+  if (speech && speechAt < speech.length) {
+    speechAt = speech.length;
+    return true;
   }
-  return list;
+  if (lineQueue.length) {
+    speech = lineQueue.shift();
+    speechAt = 0;
+    return true;
+  }
+  return false;
 }
 
-function labelFor(node) {
-  if ((node.fake || node.real) && !state.schrodingerRevealed) return `${node.name} · 可能的负责人`;
-  if (node.real && state.schrodingerRevealed) return `${node.name} · 真负责人`;
-  if (node.hidden && !node.revealed) return `${node.name} · 要求未公开`;
-  return node.name;
+function begin(changeId, levelId = 1, nextSeed = seed) {
+  seed = Math.max(1, Number(nextSeed) || 1);
+  state = createRun(levelId, changeId, seed);
+  scene = "battle";
+  cursor = 0;
+  logSeen = 0;
+  speech = "";
+  lineQueue = [];
+  nextLevel = null;
+  popups = [];
+  queueLines(true);
+  tone(523, 0.08);
 }
 
-function badgeFor(node) {
-  if ((node.fake || node.real) && !state.schrodingerRevealed) return "未揭晓";
-  return STATUS[node.status] || node.status;
+function markHot(key) {
+  hot[key] = 28;
 }
 
-function showCorrupt() {
-  modal.hidden = false;
-  modal.innerHTML = "";
-  const card = document.createElement("div");
-  card.className = "modal-card";
-  card.innerHTML = "<p class='kicker'>理智见底</p><h3>那你来做流程负责人吧</h3>";
-  const body = document.createElement("p");
-  body.textContent = "大老板看着你空掉的理智。你可以坐到门禁那一侧，也可以把位子推回去，理智会回来一点。";
-  const actions = document.createElement("div");
-  actions.className = "choices";
-  actions.append(choice("我来加一道卡点", "corrupt", true), choice("我还是要把这一行送上车", "decline", false));
-  card.append(body, actions);
-  modal.appendChild(card);
-}
-
-function showVp() {
-  modal.hidden = false;
-  modal.innerHTML = "";
-  const card = document.createElement("div");
-  card.className = "modal-card";
-  card.innerHTML = "<p class='kicker'>VP 评审会</p><h3>十五分钟，只讲这一行</h3>";
-  const body = document.createElement("p");
-  body.textContent = "助理已经在问：这个风险谁来背？去开会掉理智，但能放过一个节点。让助理代开，纪要里没有决议。不去，节点还在。";
-  const actions = document.createElement("div");
-  actions.className = "choices";
-  actions.append(
-    choice("去开会", "vp-attend", true),
-    choice("让助理代开", "vp-delegate", false),
-    choice("这个会我不去", "vp-skip", false),
-  );
-  card.append(body, actions);
-  modal.appendChild(card);
-}
-
-function showOutcome() {
-  const outcome = state.outcome;
-  modal.hidden = false;
-  modal.innerHTML = "";
-  const card = document.createElement("div");
-  card.className = "modal-card";
-  card.dataset.outcome = outcome.id;
-  if (outcome.kind === "level") {
-    const info = continueLevel(state);
-    card.innerHTML = "<p class='kicker'>合进这班了</p><h3>这一行先上车了</h3>";
-    const body = document.createElement("p");
-    body.textContent = `下一关是「${info.levelName}」。精力 ${info.energy}，理智 ${info.sanity}，还带着你。`;
-    const actions = document.createElement("div");
-    actions.className = "choices";
-    const next = document.createElement("button");
-    next.type = "button";
-    next.className = "primary";
-    next.dataset.level = String(outcome.id);
-    next.textContent = `进入${info.levelName}`;
-    next.addEventListener("click", () => {
-      state = info;
-      modal.hidden = true;
-      modal.innerHTML = "";
-      render();
+function commit(actionId) {
+  if (!state) return;
+  const before = {
+    energy: state.energy,
+    sanity: state.sanity,
+    favor: state.favor,
+    days: state.days,
+    audit: state.audit,
+    train: state.train,
+  };
+  const next = applyAction(state, actionId);
+  if (next === state) {
+    tone(98, 0.08);
+    const view = cardView(state, actionId);
+    speech = view.reason || "现在不能这么做";
+    speechAt = speech.length;
+    return;
+  }
+  state = next;
+  const spots = { energy: 36, sanity: 48, favor: 60, days: 12, audit: 230 };
+  for (const key of Object.keys(before)) {
+    if (key === "train") continue;
+    const delta = state[key] - before[key];
+    if (!delta) continue;
+    markHot(key);
+    popups.push({
+      x: spots[key] || 40,
+      y: key === "days" || key === "audit" ? 4 : 34,
+      text: `${delta > 0 ? "+" : ""}${delta}`,
+      t: 42,
+      color: delta < 0 ? RED : GOLD,
     });
-    actions.appendChild(next);
-    card.append(body, actions);
-  } else {
-    const info = OUTCOMES[outcome.id];
-    card.innerHTML = `<p class="kicker">${info.kind === "ending" ? "结局" : "这班没了"}</p><h3></h3>`;
-    card.querySelector("h3").textContent = info.title;
-    const body = document.createElement("p");
-    body.className = "result-line";
-    body.textContent = info.text;
-    const actions = document.createElement("div");
-    actions.className = "choices";
-    const again = document.createElement("button");
-    again.type = "button";
-    again.className = "primary";
-    again.textContent = "再选一个改动";
-    again.addEventListener("click", () => {
+  }
+  if (state.energy < before.energy || state.sanity < before.sanity) {
+    shake = 8;
+    flash = 5;
+    tone(150, 0.09);
+  } else tone(660, 0.05);
+  if (state.train !== before.train) trainAnim = 40;
+  queueLines(false);
+  cursor = 0;
+  if (state.outcome?.kind === "level") nextLevel = continueLevel(state);
+  if (state.outcome) scene = "result";
+}
+
+function confirm() {
+  const list = items();
+  const item = list[cursor];
+  if (scene === "help") {
+    helpPage = (helpPage + 1) % HELP_PAGES.length;
+    tone(440, 0.04);
+    return;
+  }
+  if ((scene === "battle" || scene === "result") && skipSpeech()) {
+    tone(330, 0.03);
+    return;
+  }
+  if (!item) return;
+  if (scene === "title") {
+    if (item.id === "help") openHelp();
+    else {
+      scene = "station";
+      cursor = 0;
+      tone(494, 0.06);
+    }
+    return;
+  }
+  if (scene === "station") {
+    begin(item.id, 1, seed);
+    return;
+  }
+  if (scene === "result") {
+    if (nextLevel) {
+      state = nextLevel;
+      nextLevel = null;
+      scene = "battle";
+      cursor = 0;
+      logSeen = 0;
+      speech = "";
+      lineQueue = [];
+      queueLines(true);
+      tone(587, 0.08);
+    } else {
       state = null;
-      play.hidden = true;
-      pick.hidden = false;
-      modal.hidden = true;
-      modal.innerHTML = "";
-    });
-    actions.appendChild(again);
-    card.append(body, actions);
+      scene = "title";
+      cursor = 0;
+      speech = "";
+      tone(220, 0.06);
+    }
+    return;
   }
-  modal.appendChild(card);
+  if (item.playable === false) {
+    tone(98, 0.08);
+    speech = item.reason || "现在不能这么做";
+    speechAt = speech.length;
+    return;
+  }
+  commit(item.id);
 }
 
-function choice(label, actionId, primary) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = primary ? "primary" : "choice";
-  button.dataset.action = actionId;
-  button.textContent = label;
-  button.addEventListener("click", () => act(actionId));
-  return button;
+function openHelp() {
+  if (scene !== "help") backScene = scene;
+  scene = "help";
+  helpPage = 0;
+  tone(392, 0.05);
 }
+
+function back() {
+  if (scene === "help") {
+    scene = backScene || "title";
+    tone(196, 0.05);
+    return;
+  }
+  if (speech || lineQueue.length) {
+    speech = "";
+    speechAt = 0;
+    lineQueue = [];
+    return;
+  }
+  if (scene === "station" || scene === "result") {
+    state = null;
+    nextLevel = null;
+    scene = "title";
+    cursor = 0;
+  }
+}
+
+function move(dx, dy) {
+  if (scene === "title" && dx) {
+    seed = Math.max(1, seed + dx);
+    tone(300, 0.03);
+    return;
+  }
+  if (scene === "help") {
+    helpPage = Math.max(0, Math.min(HELP_PAGES.length - 1, helpPage + dy));
+    return;
+  }
+  cursor += dy;
+  const list = items();
+  if (cursor < 0) cursor = list.length - 1;
+  if (cursor >= list.length) cursor = 0;
+  tone(240, 0.02, "square", 0.03);
+}
+
+function press(key) {
+  if (key === "up") move(0, -1);
+  else if (key === "down") move(0, 1);
+  else if (key === "left") move(-1, 0);
+  else if (key === "right") move(1, 0);
+  else if (key === "a") confirm();
+  else if (key === "b") back();
+  else if (key === "start") openHelp();
+  else if (key === "select") {
+    muted = !muted;
+    document.querySelector("#led").style.background = muted ? "#445" : "#ff4d4d";
+    if (!muted) tone(880, 0.05);
+  }
+}
+
+const KEYS = {
+  ArrowUp: "up",
+  ArrowDown: "down",
+  ArrowLeft: "left",
+  ArrowRight: "right",
+  Enter: "a",
+  z: "a",
+  Z: "a",
+  Escape: "b",
+  x: "b",
+  X: "b",
+  s: "start",
+  S: "start",
+  Shift: "select",
+};
+window.addEventListener("keydown", (event) => {
+  const key = KEYS[event.key];
+  if (!key) return;
+  event.preventDefault();
+  press(key);
+});
+document.querySelectorAll("[data-key]").forEach((button) => {
+  button.addEventListener("click", () => press(button.dataset.key));
+});
+canvas.addEventListener("pointerdown", (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const y = ((event.clientY - rect.top) / rect.height) * H;
+  const geom = menuBox();
+  const row = Math.floor((y - geom.y) / geom.h);
+  const list = items();
+  if (row >= 0 && row < list.length) {
+    if (cursor === row) confirm();
+    else cursor = row;
+    return;
+  }
+  if (scene === "battle" || scene === "result") confirm();
+});
+
+function menuBox() {
+  if (scene === "title") return { y: 156, h: 18 };
+  if (scene === "station") return { y: 132, h: 28 };
+  if (scene === "result") return { y: 208, h: 18 };
+  if (scene === "help") return { y: 210, h: 18 };
+  return { y: 152, h: 22 };
+}
+
+function drawHud() {
+  if (!state) return;
+  ctx.fillStyle = "#0c1a24";
+  ctx.fillRect(0, 0, W, 28);
+  ctx.fillStyle = "#2a4458";
+  ctx.fillRect(0, 27, W, 1);
+  const levelHot = hot.level ? GOLD : INK;
+  text(`第${state.levelId}关 ${state.levelName}`, 4, 2, levelHot);
+  text(`班次 ${state.train}/${state.maxTrains}`, 232, 2, hot.train ? GOLD : INK);
+  text("天数", 4, 14, hot.days ? GOLD : DIM);
+  bar(28, 16, 54, 6, state.days, state.dayBudget, GREEN);
+  text(`${state.days}/${state.dayBudget}`, 86, 14, hot.days ? GOLD : INK);
+  text("审计", 150, 14, hot.audit ? GOLD : DIM);
+  bar(174, 16, 36, 6, state.audit, state.auditMax, RED);
+  text(`${state.audit}/${state.auditMax}`, 214, 14, hot.audit ? GOLD : INK);
+}
+
+function drawBars() {
+  const rows = [
+    ["精力", state.energy, state.energyMax, BLUE, "energy"],
+    ["理智", state.sanity, state.sanityMax, "#c080e0", "sanity"],
+    ["人情", state.favor, state.favorMax, "#f0b050", "favor"],
+  ];
+  rows.forEach(([label, value, max, color, key], index) => {
+    const y = 30 + index * 12;
+    text(label, 4, y, hot[key] ? GOLD : DIM);
+    bar(28, y + 1, 70, 7, value, max, color);
+    text(`${value}/${max}`, 102, y, hot[key] ? GOLD : INK);
+  });
+}
+
+function drawActor(kind, x, y) {
+  if (kind === "player") blit(x, y, PLAYER, MAPS.player, 2);
+  else blit(x, y, SPRITE[kind] || SPRITE.mob, MAPS[kind] || MAPS.mob, 2);
+}
+
+function drawRail() {
+  const blocker = currentBlocker(state);
+  const nodes = state.nodes.filter((node) => node.status !== "read" || node.boss);
+  const shown = nodes.slice(0, 8);
+  ctx.fillStyle = "#4a4030";
+  ctx.fillRect(8, 100, 250, 3);
+  const step = shown.length ? 220 / shown.length : 40;
+  shown.forEach((node, index) => {
+    const x = 14 + index * step;
+    const current = blocker && node.id === blocker.id;
+    const bob = current && Math.floor(frame / 8) % 2 === 0 ? -2 : 0;
+    ctx.fillStyle = node.status === "approved" ? GREEN : current ? RED : "#d8efe0";
+    ctx.fillRect(x, 92 + bob, current ? 10 : 7, current ? 10 : 7);
+    if (node.boss || node.form) {
+      ctx.fillStyle = GOLD;
+      ctx.fillRect(x + 2, 94 + bob, 3, 3);
+    }
+  });
+  const shift = state.days <= 2 ? 8 + Math.sin(frame / 4) * 2 : 0;
+  blit(268 - shift - (trainAnim ? Math.sin(frame / 2) * 3 : 0), 84, TRAIN, MAPS.train, 2);
+  if (state.days <= 2) text("即将发车", 248, 74, RED);
+  const brief = blocker ? nodeBrief(state, blocker).text : "当前没有卡住的格子。";
+  text(fitText(brief, 312), 4, 106, blocker ? GOLD : DIM);
+}
+
+function drawSpeech() {
+  ctx.fillStyle = PANEL;
+  ctx.fillRect(4, 118, 312, 32);
+  ctx.strokeStyle = "#2a4458";
+  ctx.strokeRect(4.5, 118.5, 311, 31);
+  const turns = state?.turns?.slice(-2) || [];
+  if (turns.length) text(fitText(`${turns[turns.length - 1].source} ${turns[turns.length - 1].text}`, 304), 8, 120, DIM);
+  const picked = items()[cursor];
+  const idle = !speech && picked?.preview && picked.playable
+    ? `打出后 精力 ${picked.preview.energy}/${state.energyMax} · 理智 ${picked.preview.sanity}/${state.sanityMax} · 人情 ${picked.preview.favor}/${state.favorMax}`
+    : speech.slice(0, speechAt);
+  wrap(idle, 300).slice(0, 1).forEach((line) => text(line, 8, 132, INK));
+}
+
+function drawMenu() {
+  const geom = menuBox();
+  const list = items();
+  ctx.fillStyle = "#0c1822";
+  ctx.fillRect(0, geom.y - 2, W, H - geom.y + 2);
+  list.forEach((item, index) => {
+    const y = geom.y + index * geom.h;
+    const on = index === cursor;
+    if (on) {
+      ctx.fillStyle = "#1c3a28";
+      ctx.fillRect(2, y - 1, 316, geom.h - 1);
+    }
+    const nameColor = item.playable === false ? "#5d6b64" : on ? GOLD : INK;
+    const label = on ? `> ${item.name}` : `  ${item.name}`;
+    text(label, 4, y, nameColor);
+    const extra = item.playable === false
+      ? item.reason
+      : [item.cost, item.effect].filter(Boolean).join(" · ");
+    if (scene === "battle") {
+      text(fitText(extra, 300), 16, y + 10, item.playable === false ? RED : DIM);
+    } else if (extra) {
+      text(fitText(extra, 200), 108, y, item.playable === false ? RED : DIM);
+      if (on && item.effect && geom.h > 20) text(fitText(item.effect, 290), 16, y + 11, DIM);
+    }
+  });
+}
+
+function drawTitle() {
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+  for (let i = 0; i < 8; i += 1) {
+    ctx.fillStyle = i % 2 ? "#102030" : "#0c1a24";
+    ctx.fillRect(0, 150 + i, W, 1);
+  }
+  blit(18, 78 + Math.round(Math.sin(frame / 10) * 2), TRAIN, MAPS.train, 3);
+  text("下一班火车", 108, 48, GOLD);
+  text("把一行改动送上车", 108, 66, INK);
+  text(`种子 ${seed}  ←→`, 108, 92, DIM);
+  text("初级工程师的审批战", 108, 112, DIM);
+  drawMenu();
+}
+
+function drawStation() {
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "#1a2830";
+  ctx.fillRect(0, 70, W, 50);
+  ctx.fillStyle = "#4a4030";
+  ctx.fillRect(0, 112, W, 4);
+  blit(230, 78, TRAIN, MAPS.train, 2);
+  text("车站", 8, 8, GOLD);
+  text("选一行改动。三种开头不一样。", 8, 24, INK);
+  text(`种子 ${seed}`, 8, 40, DIM);
+  CHANGES.forEach((change, index) => {
+    if (index === cursor) text("▶", 8, 78 + index * 4, GOLD);
+  });
+  drawMenu();
+}
+
+function drawBattle() {
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "#102018";
+  ctx.fillRect(0, 28, W, 100);
+  drawHud();
+  drawBars();
+  drawActor("player", 8, 64);
+  const blocker = currentBlocker(state);
+  const kind = blocker?.boss || (blocker?.form ? "kafka" : "mob");
+  drawActor(kind, 250, 58);
+  const who = blocker ? blocker.name : "没有卡点";
+  text(who.length > 8 ? who.slice(0, 8) : who, 214, 58, GOLD);
+  drawRail();
+  drawSpeech();
+  drawMenu();
+}
+
+function drawHelp() {
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+  text("玩法说明", 8, 8, GOLD);
+  text(`${helpPage + 1}/${HELP_PAGES.length}`, 270, 8, DIM);
+  HELP_PAGES[helpPage].forEach((line, index) => {
+    text(line, 8, 26 + index * 16, INK);
+  });
+  text("A 下一页   B 返回", 8, 220, DIM);
+}
+
+function drawResult() {
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+  drawHud();
+  const report = state.outcome?.kind === "level"
+    ? {
+      title: "这关过了",
+      cause: `下一关是${nextLevel?.levelName || "下一关"}。精力 ${nextLevel?.energy}/${nextLevel?.energyMax}，理智 ${nextLevel?.sanity}，人情 ${nextLevel?.favor}。`,
+      tip: "过关会补一点精力、理智和人情。",
+    }
+    : outcomeReport(state);
+  text(report.title, 8, 36, GOLD);
+  let y = 54;
+  for (const line of wrap(report.cause, 300)) {
+    text(line, 8, y, INK);
+    y += 12;
+  }
+  y += 6;
+  for (const line of wrap(`提示：${report.tip}`, 300)) {
+    text(line, 8, y, DIM);
+    y += 12;
+  }
+  if (speech) wrap(speech.slice(0, speechAt), 300).slice(0, 2).forEach((line) => {
+    text(line, 8, y, "#9ad0c8");
+    y += 12;
+  });
+  drawMenu();
+}
+
+function drawPopups() {
+  for (const popup of popups) {
+    text(popup.text, popup.x, popup.y - (42 - popup.t) / 3, popup.color);
+  }
+}
+
+function frameTick() {
+  frame += 1;
+  if (speech && speechAt < speech.length && frame % 2 === 0) {
+    speechAt += 1;
+    if (speechAt % 3 === 0) tone(520, 0.015, "square", 0.02);
+  }
+  popups = popups.filter((popup) => {
+    popup.t -= 1;
+    return popup.t > 0;
+  });
+  for (const key of Object.keys(hot)) if (hot[key] > 0) hot[key] -= 1;
+  if (shake > 0) shake -= 1;
+  if (flash > 0) flash -= 1;
+  if (trainAnim > 0) trainAnim -= 1;
+  const dx = shake ? ((frame % 2) ? 2 : -2) : 0;
+  ctx.save();
+  ctx.translate(dx, 0);
+  ctx.fillStyle = BG;
+  ctx.fillRect(-4, 0, W + 8, H);
+  if (scene === "title") drawTitle();
+  else if (scene === "station") drawStation();
+  else if (scene === "help") drawHelp();
+  else if (scene === "result") drawResult();
+  else drawBattle();
+  drawPopups();
+  if (flash > 0) {
+    ctx.fillStyle = `rgba(255,244,224,${flash / 12})`;
+    ctx.fillRect(-4, 0, W + 8, H);
+  }
+  if (!fontReady) text("……", 8, 8, DIM);
+  ctx.restore();
+  requestAnimationFrame(frameTick);
+}
+requestAnimationFrame(frameTick);
 
 if (debug) {
   window.__next = {
     get state() {
       return state;
     },
+    get scene() {
+      return scene;
+    },
     begin,
-    act,
-    legalActions: () => legalActions(state),
+    act: commit,
+    press,
+    legalActions: () => (state ? legalActions(state) : []),
   };
 }
 
