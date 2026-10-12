@@ -4,34 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>下一班火车</title>
-    <meta name="description" content="掌机里的审批战。把一行改动送上版本火车。" />
+    <meta name="description" content="把一行改动送上版本火车。像素审批战。" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div id="console">
-      <div class="shell">
-        <div class="brand"><span class="led" id="led"></span> NEXT TRAIN <small>掌机</small></div>
-        <div class="well">
-          <canvas id="screen" width="320" height="240" tabindex="0" aria-label="下一班火车"></canvas>
-        </div>
-        <div class="pad">
-          <div class="dpad" aria-label="方向键">
-            <button type="button" data-key="up" aria-label="上">▲</button>
-            <button type="button" data-key="left" aria-label="左">◀</button>
-            <button type="button" data-key="down" aria-label="下">▼</button>
-            <button type="button" data-key="right" aria-label="右">▶</button>
-          </div>
-          <div class="center-keys">
-            <button type="button" data-key="select">SELECT</button>
-            <button type="button" data-key="start">START</button>
-          </div>
-          <div class="ab">
-            <button type="button" class="key-b" data-key="b" aria-label="B 返回">B</button>
-            <button type="button" class="key-a" data-key="a" aria-label="A 确认">A</button>
-          </div>
-        </div>
-        <p class="key-hint">方向键选择 · A 确认 · B 返回 · Start 说明 · Select 静音</p>
-      </div>
+    <div id="stage">
+      <canvas id="screen" width="426" height="240" tabindex="0" aria-label="下一班火车"></canvas>
     </div>
     <script type="module" src="ui.js"></script>
   </body>
